@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -13,6 +15,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.AddCircleOutline
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
@@ -27,6 +30,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.unimarket.ui.AppViewModelProvider
 import com.example.unimarket.ui.components.Caption
 import com.example.unimarket.ui.navigation.Routes
 import com.example.unimarket.ui.theme.AppColors
@@ -35,8 +40,10 @@ import com.example.unimarket.ui.theme.AppColors
 fun MenuScreen(
     onNavigate: (String) -> Unit,
     onBack: () -> Unit,
-    onSignOut: () -> Unit
+    onSignedOut: () -> Unit,
+    viewModel: MenuViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
+    val userInitials by viewModel.userInitials.collectAsState()
     var showLogoutDialog by remember { mutableStateOf(false) }
 
     if (showLogoutDialog) {
@@ -48,7 +55,8 @@ fun MenuScreen(
                 Button(
                     onClick = {
                         showLogoutDialog = false
-                        onSignOut()
+                        viewModel.logout()
+                        onSignedOut()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
@@ -68,6 +76,7 @@ fun MenuScreen(
             .fillMaxSize()
             .statusBarsPadding()
             .navigationBarsPadding()
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 18.dp)
     ) {
         Row(
@@ -103,7 +112,7 @@ fun MenuScreen(
                     .clickable { onNavigate(Routes.PROFILE) },
                 contentAlignment = Alignment.Center
             ) {
-                Text("GE", color = Color.Black, fontWeight = FontWeight.Bold)
+                Text(userInitials, color = Color.Black, fontWeight = FontWeight.Bold)
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -125,13 +134,19 @@ fun MenuScreen(
             icon = Icons.Outlined.AddCircleOutline,
             title = "Jual barang",
             note = "Pasang iklan baru",
-            onClick = { onNavigate(Routes.POST) }
+            onClick = { onNavigate(Routes.post()) }
+        )
+        MenuItem(
+            icon = Icons.Outlined.Inventory2,
+            title = "Barang saya",
+            note = "Kelola iklan & status barang",
+            onClick = { onNavigate(Routes.MY_ITEMS) }
         )
         MenuItem(
             icon = Icons.Outlined.ChatBubbleOutline,
             title = "Pesan",
             note = "Chat dengan penjual",
-            onClick = { onNavigate(Routes.chat(1)) }
+            onClick = { onNavigate(Routes.CHATS) }
         )
         MenuItem(
             icon = Icons.Outlined.Person,
@@ -140,8 +155,8 @@ fun MenuScreen(
             onClick = { onNavigate(Routes.PROFILE) }
         )
         
-        Spacer(modifier = Modifier.weight(1f))
-        
+        Spacer(modifier = Modifier.height(24.dp))
+
         OutlinedButton(
             onClick = { showLogoutDialog = true },
             modifier = Modifier

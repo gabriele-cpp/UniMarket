@@ -31,7 +31,13 @@ fun Caption(value: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun Section(title: String, action: String, modifier: Modifier = Modifier) {
+fun Section(
+    title: String,
+    action: String,
+    modifier: Modifier = Modifier,
+    /** Jika diisi, teks [action] tampil tebal dan bisa diklik (mis. "Lihat semua"). */
+    onActionClick: (() -> Unit)? = null
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -48,9 +54,10 @@ fun Section(title: String, action: String, modifier: Modifier = Modifier) {
         )
         Text(
             text = action,
-            fontWeight = if (action == "Lihat semua") FontWeight.Bold else FontWeight.Normal,
-            color = if (action == "Lihat semua") Color.Black else MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 13.sp
+            fontWeight = if (onActionClick != null) FontWeight.Bold else FontWeight.Normal,
+            color = if (onActionClick != null) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant,
+            fontSize = 13.sp,
+            modifier = if (onActionClick != null) Modifier.clickable(onClick = onActionClick) else Modifier
         )
     }
 }

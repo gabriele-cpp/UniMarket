@@ -2,131 +2,120 @@ package com.example.unimarket.ui.login
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.unimarket.UniMarketApplication
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.unimarket.ui.AppViewModelProvider
 import com.example.unimarket.ui.components.Brand
 import com.example.unimarket.ui.components.Caption
 
 @Composable
-fun LoginScreen(onLoginSuccess: () -> Unit) {
-    val context = LocalContext.current
-    val userPreferences = remember { (context.applicationContext as UniMarketApplication).container.userPreferences }
+fun LoginScreen(
+    onLoginSuccess: () -> Unit,
+    onRegisterClick: () -> Unit,
+    viewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory)
+) {
+    val uiState by viewModel.uiState.collectAsState()
 
-    var email by rememberSaveable { mutableStateOf("") }
-    var password by rememberSaveable { mutableStateOf("") }
-    var emailError by rememberSaveable { mutableStateOf<String?>(null) }
-    var passwordError by rememberSaveable { mutableStateOf<String?>(null) }
-    var showRegister by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(uiState.isLoggedIn) {
+        if (uiState.isLoggedIn) onLoginSuccess()
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 28.dp, vertical = 52.dp),
-        verticalArrangement = Arrangement.SpaceBetween
+            .imePadding()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 28.dp, vertical = 52.dp)
     ) {
-        Column {
-            Brand()
-            Spacer(modifier = Modifier.height(24.dp))
-            Caption("01 — MASUK")
+        Brand()
+        Spacer(modifier = Modifier.height(24.dp))
+        Caption("01 — MASUK")
+        Text(
+            text = "Selamat datang kembali",
+            fontWeight = FontWeight.Bold,
+            fontSize = 24.sp,
+            modifier = Modifier.padding(top = 8.dp)
+        )
+        Text(
+            text = "Silakan masuk untuk melanjutkan",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 4.dp, bottom = 24.dp)
+        )
+
+        OutlinedTextField(
+            value = uiState.email,
+            onValueChange = viewModel::onEmailChange,
+            label = { Text("Email Kampus") },
+            placeholder = { Text("nama@mahasiswa.ac.id") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
+            isError = uiState.emailError != null,
+            supportingText = uiState.emailError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            value = uiState.password,
+            onValueChange = viewModel::onPasswordChange,
+            label = { Text("Password") },
+            singleLine = true,
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+            isError = uiState.passwordError != null,
+            supportingText = uiState.passwordError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        uiState.generalError?.let {
             Text(
-                text = "Selamat datang kembali",
+                text = it,
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                fontSize = 24.sp,
                 modifier = Modifier.padding(top = 8.dp)
             )
-            Text(
-                text = "Silakan masuk untuk melanjutkan",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 4.dp, bottom = 24.dp)
-            )
-            
-            OutlinedTextField(
-                value = email,
-                onValueChange = { 
-                    email = it
-                    emailError = null
-                },
-                label = { Text("Email Kampus") },
-                placeholder = { Text("nama@mahasiswa.ac.id") },
-                isError = emailError != null,
-                supportingText = emailError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
-                value = password,
-                onValueChange = { 
-                    password = it
-                    passwordError = null
-                },
-                label = { Text("Password") },
-                visualTransformation = PasswordVisualTransformation(),
-                isError = passwordError != null,
-                supportingText = passwordError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-                modifier = Modifier.fillMaxWidth()
-            )
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            Button(
-                onClick = {
-                    var hasError = false
-                    if (email.isBlank()) {
-                        emailError = "Email kampus tidak boleh kosong"
-                        hasError = true
-                    } else if (!email.contains("@")) {
-                        emailError = "Format email tidak valid (harus mengandung @)"
-                        hasError = true
-                    }
-                    
-                    if (password.isBlank()) {
-                        passwordError = "Password tidak boleh kosong"
-                        hasError = true
-                    } else if (password.length < 4) {
-                        passwordError = "Password minimal 4 karakter"
-                        hasError = true
-                    }
+        }
 
-                    if (!hasError) {
-                        // Save login session permanently
-                        userPreferences.setLoggedIn(true, email = email)
-                        onLoginSuccess()
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(
+            onClick = viewModel::onLogin,
+            enabled = !uiState.isLoading,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            if (uiState.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            } else {
                 Text("MASUK")
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Masuk")
             }
         }
-        
-        Text(
-            text = "Belum punya akun? Daftar sekarang",
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.clickable { showRegister = true }
-        )
-    }
 
-    if (showRegister) {
-        AlertDialog(
-            onDismissRequest = { showRegister = false },
-            title = { Text("Daftar Akun") },
-            text = { Text("Fitur pendaftaran akun mahasiswa baru akan segera hadir.") },
-            confirmButton = {
-                TextButton(onClick = { showRegister = false }) {
-                    Text("OK")
-                }
-            }
+        Spacer(modifier = Modifier.height(32.dp))
+        Text(
+            text = "Belum punya akun? Daftar",
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .clickable(onClick = onRegisterClick)
+                .padding(vertical = 8.dp)
         )
     }
 }

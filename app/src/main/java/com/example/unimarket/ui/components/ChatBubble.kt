@@ -18,30 +18,44 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.unimarket.ui.theme.AppColors
 
+/**
+ * Gelembung chat. Pesan milik sendiri ([isMine]) di kanan dengan warna primary,
+ * pesan lawan bicara di kiri.
+ */
 @Composable
-fun ChatBubble(text: String, fromSeller: Boolean, modifier: Modifier = Modifier) {
-    Box(
+fun ChatBubble(text: String, isMine: Boolean, modifier: Modifier = Modifier, time: String? = null) {
+    Column(
         modifier = modifier.fillMaxWidth(),
-        contentAlignment = if (fromSeller) Alignment.CenterEnd else Alignment.CenterStart
+        horizontalAlignment = if (isMine) Alignment.End else Alignment.Start
     ) {
         Text(
             text = text,
             modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .wrapContentWidth(if (isMine) Alignment.End else Alignment.Start)
                 .clip(RoundedCornerShape(12.dp))
                 .background(
-                    if (fromSeller) MaterialTheme.colorScheme.secondaryContainer 
-                    else MaterialTheme.colorScheme.primary
+                    if (isMine) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.secondaryContainer
                 )
                 .padding(12.dp),
-            color = if (fromSeller) MaterialTheme.colorScheme.onSecondaryContainer 
-                    else MaterialTheme.colorScheme.onPrimary,
+            color = if (isMine) MaterialTheme.colorScheme.onPrimary
+                    else MaterialTheme.colorScheme.onSecondaryContainer,
             fontSize = 14.sp
         )
+        if (time != null) {
+            Text(
+                text = time,
+                fontSize = 10.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 2.dp, start = 4.dp, end = 4.dp)
+            )
+        }
     }
 }
 
 @Composable
-fun SellerCard(name: String, modifier: Modifier = Modifier) {
+fun SellerCard(name: String, modifier: Modifier = Modifier, phone: String = "") {
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp)
@@ -76,6 +90,13 @@ fun SellerCard(name: String, modifier: Modifier = Modifier) {
                     text = name,
                     fontWeight = FontWeight.Bold
                 )
+                if (phone.isNotBlank()) {
+                    Text(
+                        text = "+$phone",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,

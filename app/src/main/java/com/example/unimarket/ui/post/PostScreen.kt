@@ -20,11 +20,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.unimarket.data.repository.ProductRepository
 import com.example.unimarket.ui.AppViewModelProvider
+import com.example.unimarket.data.model.ProductDefaults
 import com.example.unimarket.ui.components.CategoryGrid
-import com.example.unimarket.ui.components.FilterButton
 import com.example.unimarket.ui.components.Caption
+import com.example.unimarket.ui.util.imageModel
 import com.example.unimarket.ui.components.UniMarketTopBar
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -45,8 +45,13 @@ fun PostScreen(
                 viewModel.onDismissSuccess()
                 onPostSuccess()
             },
-            title = { Text("Iklan berhasil dibuat") },
-            text = { Text("Barang Anda akan muncul di beranda setelah ditinjau.") },
+            title = { Text(if (uiState.isEditMode) "Perubahan disimpan" else "Barang berhasil diposting") },
+            text = {
+                Text(
+                    if (uiState.isEditMode) "Data barang sudah diperbarui."
+                    else "Barangmu sekarang tampil di beranda dan bisa dicari pembeli."
+                )
+            },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -54,7 +59,25 @@ fun PostScreen(
                         onPostSuccess()
                     }
                 ) {
-                    Text("Kembali ke beranda")
+                    Text(if (uiState.isEditMode) "Kembali" else "Kembali ke beranda")
+                }
+            }
+        )
+    }
+
+    uiState.errorMessage?.let { message ->
+        // Jika barang gagal dimuat (tidak ada / bukan milik user), tutup layar setelah dialog ditutup.
+        val dismiss = {
+            viewModel.onDismissError()
+            if (uiState.loadFailed) onBack()
+        }
+        AlertDialog(
+            onDismissRequest = dismiss,
+            title = { Text("Terjadi kesalahan") },
+            text = { Text(message) },
+            confirmButton = {
+                TextButton(onClick = dismiss) {
+                    Text("OK")
                 }
             }
         )
@@ -70,11 +93,20 @@ fun PostScreen(
     Scaffold(
         topBar = {
             UniMarketTopBar(
-                title = "Pasang iklan",
+                title = if (uiState.isEditMode) "Edit barang" else "Pasang iklan",
                 onBack = onBack
             )
         }
     ) { paddingValues ->
+        if (uiState.isLoadingProduct || uiState.loadFailed) {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                if (uiState.isLoadingProduct) CircularProgressIndicator()
+            }
+            return@Scaffold
+        }
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -104,7 +136,7 @@ fun PostScreen(
                 ) {
                     if (uiState.imageUri != null) {
                         AsyncImage(
-                            model = uiState.imageUri,
+                            model = imageModel(uiState.imageUri),
                             contentDescription = "Selected photo",
                             modifier = Modifier.fillMaxSize(),
                             contentScale = androidx.compose.ui.layout.ContentScale.Crop
@@ -161,28 +193,32 @@ fun PostScreen(
                 Spacer(modifier = Modifier.height(7.dp))
 
                 CategoryGrid(
-                    selected = uiState.category,
-                    onSelected = { viewModel.onCategoryChange(it) },
-                    categories = ProductRepository.getCategories().filter { it != "Semua" }
+                    selected = uiState.categories.firstOrNull { it.id == uiState.categoryId }?.name.orEmpty(),
+                    onSelected = { name ->
+                        uiState.categories.firstOrNull { it.name == name }?.let { viewModel.onCategoryChange(it.id) }
+                    },
+                    categories = uiState.categories.map { it.name }
                 )
+
+                if (uiState.categoryError != null) {
+                    Text(
+                        text = uiState.categoryError!!,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(start = 12.dp, top = 4.dp)
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(17.dp))
                 Caption("KONDISI BARANG")
                 Spacer(modifier = Modifier.height(7.dp))
 
-                val conditions = listOf("Baru", "Sangat baik", "Mulus/Biasa", "Minus minor")
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    conditions.forEach { cond ->
-                        FilterButton(
-                            title = cond,
-                            active = uiState.condition == cond,
-                            onClick = { viewModel.onConditionChange(cond) }
-                        )
-                    }
-                }
+                // Daftar kondisi dari ProductDefaults (sama dengan data seed). Grid agar tidak terpotong di layar sempit.
+                CategoryGrid(
+                    selected = uiState.condition,
+                    onSelected = viewModel::onConditionChange,
+                    categories = ProductDefaults.CONDITIONS
+                )
 
                 Spacer(modifier = Modifier.height(17.dp))
                 Caption("OPSI PENGIRIMAN & LOKASI")
@@ -242,13 +278,18 @@ fun PostScreen(
 
                 Button(
                     onClick = { viewModel.onPublish() },
+                    enabled = !uiState.isSaving,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(51.dp),
                     shape = RoundedCornerShape(9.dp)
                 ) {
                     Text(
-                        text = "TERBITKAN IKLAN",
+                        text = when {
+                            uiState.isSaving -> "MENYIMPAN..."
+                            uiState.isEditMode -> "SIMPAN PERUBAHAN"
+                            else -> "TERBITKAN IKLAN"
+                        },
                         fontWeight = FontWeight.Bold
                     )
                 }

@@ -38,4 +38,15 @@ object AppColors {
     val SellerAvatar = Color(0xFFCDE8D1)
     val DividerMedium = Color(0xFFD9DAD7)
     val DividerLight = Color(0xFFE0E1DE)
+
+    // Badge status barang
+    val StatusAvailableBg = Color(0xFFD9EAD8)
+    val StatusAvailableText = Color(0xFF1E5B26)
+    val StatusNegotiationBg = Color(0xFFFFE8B3)
+    val StatusNegotiationText = Color(0xFF7A4F00)
+    val StatusSoldBg = Color(0xFFF2D4D2)
+    val StatusSoldText = Color(0xFF8C1D18)
+
+    // Tombol kontak WhatsApp (hijau gelap agar kontras di latar putih)
+    val WhatsApp = Color(0xFF128C4A)
 }

@@ -18,10 +18,11 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.unimarket.data.repository.ProductRepository
+import com.example.unimarket.data.model.Category
 import com.example.unimarket.ui.AppViewModelProvider
 import com.example.unimarket.ui.components.*
 import com.example.unimarket.ui.navigation.Routes
+import com.example.unimarket.ui.util.ALL_CATEGORIES_LABEL
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -115,37 +116,44 @@ fun HomeScreen(
                 SearchButton(onClick = onSearchClick)
                 
                 Spacer(modifier = Modifier.height(32.dp))
-                Section(title = "Kategori populer", action = "Lihat semua")
+                // "Lihat semua" membuka halaman Cari (filter kategori + urutan lengkap).
+                Section(title = "Kategori", action = "Lihat semua", onActionClick = onSearchClick)
                 
                 androidx.compose.foundation.lazy.LazyRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(ProductRepository.getCategories()) { category ->
+                    // null = opsi "Semua" (hanya di UI, bukan baris tabel categories)
+                    val options: List<Category?> = listOf<Category?>(null) + uiState.categories
+                    items(options) { category ->
                         FilterButton(
-                            title = category,
-                            active = uiState.selectedCategory == category,
-                            onClick = { viewModel.onCategorySelect(category) }
+                            title = category?.name ?: ALL_CATEGORIES_LABEL,
+                            active = uiState.selectedCategoryId == category?.id,
+                            onClick = { viewModel.onCategorySelect(category?.id) }
                         )
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(32.dp))
                 Section(
-                    title = if (uiState.selectedCategory == "Semua") "Baru ditambahkan" else "Kategori: ${uiState.selectedCategory}", 
+                    title = if (uiState.selectedCategoryId == null) "Baru ditambahkan" else "Kategori: ${uiState.selectedCategoryName}",
                     action = "${uiState.products.size} barang"
                 )
             }
-            
-            if (uiState.products.isEmpty()) {
+
+            if (uiState.errorMessage != null) {
+                item {
+                    EmptyState(title = "Terjadi kesalahan", note = uiState.errorMessage!!)
+                }
+            } else if (uiState.products.isEmpty()) {
                 item {
                     EmptyState(
                         title = "Belum ada barang",
-                        note = "Belum ada barang pada kategori ${uiState.selectedCategory}."
+                        note = "Belum ada barang pada kategori ${uiState.selectedCategoryName}."
                     )
                 }
             } else {
-                items(uiState.products) { product ->
+                items(uiState.products, key = { it.id }) { product ->
                     ProductCard(product = product, onClick = { onProductClick(product.id) })
                 }
             }

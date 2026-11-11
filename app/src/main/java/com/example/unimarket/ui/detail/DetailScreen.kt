@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,18 +20,54 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.unimarket.data.model.ProductStatus
 import com.example.unimarket.ui.AppViewModelProvider
 import com.example.unimarket.ui.components.*
+import com.example.unimarket.ui.util.categoryColor
+import com.example.unimarket.ui.util.imageModel
+import com.example.unimarket.ui.util.formatRupiah
+import com.example.unimarket.ui.util.productMark
+import com.example.unimarket.ui.util.buildWhatsAppUrl
+import com.example.unimarket.ui.util.whatsAppGreeting
+import com.example.unimarket.ui.theme.AppColors
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.launch
+
+/**
+ * Membuka chat WhatsApp ke penjual dengan pesan pembuka.
+ * @return pesan error (bahasa Indonesia) jika gagal, atau null jika berhasil.
+ */
+private fun openWhatsApp(context: Context, phone: String, productTitle: String): String? {
+    val url = buildWhatsAppUrl(phone, whatsAppGreeting(productTitle))
+    return try {
+        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+        null
+    } catch (e: ActivityNotFoundException) {
+        "Tidak ada aplikasi untuk membuka WhatsApp. Pasang WhatsApp atau browser terlebih dahulu."
+    }
+}
 
 @Composable
 fun DetailScreen(
     productId: Int,
     onBack: () -> Unit,
-    onChat: () -> Unit,
+    /** Membuka chat dengan buyerId = user yang sedang login. */
+    onChat: (buyerId: Long) -> Unit,
+    onEdit: () -> Unit,
     viewModel: DetailViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-    val product by viewModel.product.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val product = uiState.product
+    val isLoading = uiState.isLoading
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(productId) {
         viewModel.loadProduct(productId)
@@ -52,8 +89,8 @@ fun DetailScreen(
             topBar = { UniMarketTopBar(title = "Detail barang", onBack = onBack) }
         ) { paddingValues ->
             EmptyState(
-                title = "Barang tidak ditemukan",
-                note = "Barang mungkin telah dihapus.",
+                title = if (uiState.errorMessage != null) "Terjadi kesalahan" else "Barang tidak ditemukan",
+                note = uiState.errorMessage ?: "Barang mungkin telah dihapus.",
                 modifier = Modifier.padding(paddingValues)
             )
         }
@@ -62,20 +99,61 @@ fun DetailScreen(
 
     Scaffold(
         topBar = { UniMarketTopBar(title = "Detail barang", onBack = onBack) },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             BottomAppBar(
                 containerColor = Color.White,
                 tonalElevation = 8.dp
             ) {
-                Button(
-                    onClick = onChat,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 8.dp)
-                ) {
-                    Text("HUBUNGI PENJUAL")
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+                val buttonModifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 8.dp)
+                when {
+                    // Pemilik: tidak perlu menghubungi diri sendiri, tampilkan tombol edit.
+                    uiState.isOwner -> OutlinedButton(
+                        onClick = onEdit,
+                        modifier = buttonModifier,
+                        border = androidx.compose.foundation.BorderStroke(2.dp, Color.Black)
+                    ) {
+                        Icon(Icons.Outlined.Edit, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("EDIT BARANG")
+                    }
+
+                    product.status == ProductStatus.TERJUAL -> Button(
+                        onClick = {},
+                        enabled = false,
+                        modifier = buttonModifier
+                    ) {
+                        Text("Barang sudah terjual")
+                    }
+
+                    else -> Row(
+                        modifier = buttonModifier,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = { uiState.currentUserId?.let(onChat) },
+                            enabled = uiState.currentUserId != null,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("HUBUNGI PENJUAL", maxLines = 1)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+                        }
+                        if (product.sellerPhone.isNotBlank()) {
+                            OutlinedButton(
+                                onClick = {
+                                    val error = openWhatsApp(context, product.sellerPhone, product.title)
+                                    if (error != null) scope.launch { snackbarHostState.showSnackbar(error) }
+                                },
+                                border = androidx.compose.foundation.BorderStroke(2.dp, AppColors.WhatsApp),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = AppColors.WhatsApp)
+                            ) {
+                                Text("WHATSAPP", fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -92,19 +170,19 @@ fun DetailScreen(
                         .fillMaxWidth()
                         .height(235.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(product!!.color),
+                        .background(categoryColor(product.categoryId)),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (!product!!.imageUri.isNullOrEmpty()) {
+                    if (!product.imageUri.isNullOrEmpty()) {
                         coil.compose.AsyncImage(
-                            model = product!!.imageUri,
-                            contentDescription = product!!.title,
+                            model = imageModel(product.imageUri),
+                            contentDescription = product.title,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = androidx.compose.ui.layout.ContentScale.Crop
                         )
                     } else {
                         Text(
-                            text = product!!.mark,
+                            text = productMark(product.title),
                             color = Color.Black,
                             fontSize = 54.sp,
                             fontWeight = FontWeight.Black
@@ -113,15 +191,15 @@ fun DetailScreen(
                 }
                 
                 Spacer(modifier = Modifier.height(24.dp))
-                Caption(product!!.category)
+                Caption(product.categoryName.uppercase())
                 Text(
-                    text = product!!.title,
+                    text = product.title,
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 8.dp)
                 )
                 Text(
-                    text = product!!.price,
+                    text = formatRupiah(product.price),
                     style = MaterialTheme.typography.titleLarge,
                     color = Color.Black,
                     fontWeight = FontWeight.Bold,
@@ -132,6 +210,21 @@ fun DetailScreen(
                     modifier = Modifier.padding(top = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    val (statusBg, statusText) = statusColors(product.status)
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(statusBg)
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = product.status.label,
+                            color = statusText,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
@@ -139,7 +232,7 @@ fun DetailScreen(
                             .padding(horizontal = 10.dp, vertical = 6.dp)
                     ) {
                         Text(
-                            text = "Kondisi: ${product!!.condition}",
+                            text = "Kondisi: ${product.condition}",
                             color = MaterialTheme.colorScheme.onSecondaryContainer,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
@@ -153,7 +246,7 @@ fun DetailScreen(
                             .padding(horizontal = 10.dp, vertical = 6.dp)
                     ) {
                         Text(
-                            text = "📍 ${product!!.location}",
+                            text = "📍 ${product.location}",
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
@@ -168,7 +261,7 @@ fun DetailScreen(
                     fontSize = 14.sp
                 )
                 Text(
-                    text = "🚚 ${product!!.deliveryMethod}",
+                    text = "🚚 ${product.deliveryMethod}",
                     modifier = Modifier.padding(top = 4.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 13.sp
@@ -181,13 +274,13 @@ fun DetailScreen(
                     fontSize = 18.sp
                 )
                 Text(
-                    text = product!!.description,
+                    text = product.description,
                     modifier = Modifier.padding(top = 8.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 
                 Spacer(modifier = Modifier.height(32.dp))
-                SellerCard(name = product!!.seller)
+                SellerCard(name = product.sellerName, phone = product.sellerPhone)
                 Spacer(modifier = Modifier.height(32.dp))
             }
         }

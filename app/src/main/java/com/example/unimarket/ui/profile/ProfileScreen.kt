@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Edit
@@ -14,36 +15,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.unimarket.UniMarketApplication
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.unimarket.ui.AppViewModelProvider
 import com.example.unimarket.ui.components.UniMarketTopBar
 import com.example.unimarket.ui.theme.AppColors
+import com.example.unimarket.ui.util.initials
+import com.example.unimarket.ui.util.phoneForDisplay
 
 @Composable
 fun ProfileScreen(
     onBack: () -> Unit,
-    onSignOut: () -> Unit
+    onSignedOut: () -> Unit,
+    onMyItemsClick: () -> Unit,
+    viewModel: ProfileViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-    val context = LocalContext.current
-    val userPreferences = remember { (context.applicationContext as UniMarketApplication).container.userPreferences }
-
-    var name by remember { mutableStateOf(userPreferences.getUserName()) }
-    var email by remember { mutableStateOf(userPreferences.getUserEmail()) }
-    var showEditDialog by remember { mutableStateOf(false) }
-
-    // Computation of initials (e.g. "Gabriel Emil" -> "GE")
-    val initials = remember(name) {
-        val parts = name.trim().split(" ").filter { it.isNotEmpty() }
-        when {
-            parts.size >= 2 -> "${parts[0].first()}${parts[1].first()}".uppercase()
-            parts.isNotEmpty() && parts[0].length >= 2 -> parts[0].take(2).uppercase()
-            parts.isNotEmpty() -> parts[0].uppercase()
-            else -> "UM"
-        }
-    }
+    val uiState by viewModel.uiState.collectAsState()
+    val editState by viewModel.editState.collectAsState()
+    val user = uiState.user
 
     Scaffold(
         topBar = {
@@ -70,32 +62,68 @@ fun ProfileScreen(
                         .background(AppColors.SellerAvatar),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(initials, color = Color.Black, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = user?.let { initials(it.name) } ?: "",
+                        color = Color.Black,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(name, style = MaterialTheme.typography.titleLarge, color = Color.Black, fontWeight = FontWeight.Bold)
-                    Text(email, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                    Text(
+                        text = user?.name ?: "",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = user?.email ?: "",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 12.sp
+                    )
+                    if (!user?.phone.isNullOrBlank()) {
+                        Text(
+                            text = phoneForDisplay(user!!.phone),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 12.sp
+                        )
+                    }
                 }
-                IconButton(onClick = { showEditDialog = true }) {
+                IconButton(onClick = viewModel::onEditClick, enabled = user != null) {
                     Icon(imageVector = Icons.Outlined.Edit, contentDescription = "Edit Profil")
                 }
             }
-            
+
+            uiState.errorMessage?.let {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 13.sp,
+                    modifier = Modifier.padding(top = 12.dp)
+                )
+            }
+
             Spacer(modifier = Modifier.height(32.dp))
-            
-            ProfileItem(label = "Barang yang dijual", value = "2 iklan aktif")
-            ProfileItem(label = "Barang tersimpan", value = "4 barang")
+
             ProfileItem(
-                label = "Pengaturan profil", 
-                isArrow = true, 
-                onClick = { showEditDialog = true }
+                label = "Barang saya",
+                value = "${uiState.activeListings} aktif · ${uiState.soldListings} terjual",
+                onClick = onMyItemsClick
             )
-            
+            ProfileItem(
+                label = "Pengaturan profil",
+                isArrow = true,
+                onClick = viewModel::onEditClick
+            )
+
             Spacer(modifier = Modifier.weight(1f))
-            
+
             OutlinedButton(
-                onClick = onSignOut,
+                onClick = {
+                    viewModel.logout()
+                    onSignedOut()
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(49.dp),
@@ -108,32 +136,34 @@ fun ProfileScreen(
         }
     }
 
-    if (showEditDialog) {
-        var editName by remember { mutableStateOf(name) }
-        var editEmail by remember { mutableStateOf(email) }
-        var errorMsg by remember { mutableStateOf<String?>(null) }
-
+    if (editState.isVisible) {
         AlertDialog(
-            onDismissRequest = { showEditDialog = false },
+            onDismissRequest = viewModel::onEditDismiss,
             title = { Text("Edit Profil Pengguna") },
             text = {
                 Column {
                     OutlinedTextField(
-                        value = editName,
-                        onValueChange = { editName = it },
+                        value = editState.name,
+                        onValueChange = viewModel::onEditNameChange,
                         label = { Text("Nama Lengkap") },
                         singleLine = true,
+                        isError = editState.nameError != null,
+                        supportingText = editState.nameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
                         modifier = Modifier.fillMaxWidth()
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
-                        value = editEmail,
-                        onValueChange = { editEmail = it },
-                        label = { Text("Email Kampus") },
+                        value = editState.phone,
+                        onValueChange = viewModel::onEditPhoneChange,
+                        label = { Text("Nomor HP (WhatsApp)") },
+                        placeholder = { Text("08xxxxxxxxxx") },
                         singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                        isError = editState.phoneError != null,
+                        supportingText = editState.phoneError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
                         modifier = Modifier.fillMaxWidth()
                     )
-                    errorMsg?.let {
+                    editState.saveError?.let {
                         Text(
                             text = it,
                             color = MaterialTheme.colorScheme.error,
@@ -145,24 +175,14 @@ fun ProfileScreen(
             },
             confirmButton = {
                 Button(
-                    onClick = {
-                        if (editName.isBlank()) {
-                            errorMsg = "Nama tidak boleh kosong"
-                        } else if (editEmail.isBlank() || !editEmail.contains("@")) {
-                            errorMsg = "Email kampus tidak valid"
-                        } else {
-                            userPreferences.updateProfile(editName.trim(), editEmail.trim())
-                            name = editName.trim()
-                            email = editEmail.trim()
-                            showEditDialog = false
-                        }
-                    }
+                    onClick = viewModel::onEditSave,
+                    enabled = !editState.isSaving
                 ) {
-                    Text("Simpan")
+                    Text(if (editState.isSaving) "Menyimpan..." else "Simpan")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showEditDialog = false }) {
+                TextButton(onClick = viewModel::onEditDismiss) {
                     Text("Batal")
                 }
             }

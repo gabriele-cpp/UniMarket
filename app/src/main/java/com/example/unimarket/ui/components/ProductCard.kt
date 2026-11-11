@@ -20,11 +20,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material3.HorizontalDivider
 import com.example.unimarket.data.model.Product
+import com.example.unimarket.data.model.ProductStatus
 import com.example.unimarket.ui.theme.AppColors
+import com.example.unimarket.ui.util.categoryColor
+import com.example.unimarket.ui.util.imageModel
+import com.example.unimarket.ui.util.formatRupiah
+import com.example.unimarket.ui.util.productMark
 
 @Composable
-fun ProductCard(product: Product, onClick: () -> Unit) {
+fun ProductCard(
+    product: Product,
+    onClick: () -> Unit,
+    alwaysShowStatus: Boolean = false,
+    /** Konten tambahan di bawah kartu, misalnya tombol aksi di My Items. */
+    footer: (@Composable () -> Unit)? = null
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -42,19 +54,19 @@ fun ProductCard(product: Product, onClick: () -> Unit) {
             Box(
                 modifier = Modifier
                     .size(76.dp)
-                    .background(AppColors.ProductPlaceholder),
+                    .background(categoryColor(product.categoryId)),
                 contentAlignment = Alignment.Center
             ) {
                 if (!product.imageUri.isNullOrEmpty()) {
                     coil.compose.AsyncImage(
-                        model = product.imageUri,
+                        model = imageModel(product.imageUri),
                         contentDescription = product.title,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = androidx.compose.ui.layout.ContentScale.Crop
                     )
                 } else {
                     Text(
-                        text = product.mark,
+                        text = productMark(product.title),
                         fontWeight = FontWeight.Bold,
                         fontSize = 17.sp
                     )
@@ -74,27 +86,40 @@ fun ProductCard(product: Product, onClick: () -> Unit) {
                     color = Color.Black
                 )
                 Text(
-                    text = product.price,
+                    text = formatRupiah(product.price),
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,
                     fontSize = 12.sp,
                     modifier = Modifier.padding(top = 5.dp)
                 )
-                Text(
-                    text = product.category.uppercase(),
-                    modifier = Modifier
-                        .padding(top = 9.dp)
-                        .border(1.dp, AppColors.TagBorder)
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 9.sp,
-                    color = AppColors.TagText
-                )
+                Row(
+                    modifier = Modifier.padding(top = 9.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = product.categoryName.uppercase(),
+                        modifier = Modifier
+                            .border(1.dp, AppColors.TagBorder)
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 9.sp,
+                        color = AppColors.TagText
+                    )
+                    // Di katalog, badge hanya muncul untuk status selain TERSEDIA (mis. NEGOSIASI).
+                    if (alwaysShowStatus || product.status != ProductStatus.TERSEDIA) {
+                        StatusBadge(status = product.status)
+                    }
+                }
             }
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = "Detail"
             )
+        }
+        if (footer != null) {
+            HorizontalDivider(thickness = 1.dp, color = AppColors.DividerLight)
+            footer()
         }
     }
 }

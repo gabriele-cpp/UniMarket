@@ -1,53 +1,55 @@
 package com.example.unimarket.data.local
 
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.example.unimarket.data.model.Product
+import com.example.unimarket.data.model.ProductDefaults
+import com.example.unimarket.data.model.ProductInput
+import com.example.unimarket.data.model.ProductStatus
 
-@Entity(tableName = "products")
+@Entity(
+    tableName = "products",
+    foreignKeys = [
+        ForeignKey(
+            entity = UserEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["sellerId"],
+            onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = CategoryEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["categoryId"],
+            onDelete = ForeignKey.RESTRICT
+        )
+    ],
+    indices = [Index(value = ["sellerId"]), Index(value = ["categoryId"])]
+)
 data class ProductEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val title: String,
-    val price: String,
-    val category: String,
+    /** Harga dalam Rupiah tanpa format, contoh 85000. */
+    val price: Long,
+    val categoryId: Int,
     val condition: String,
-    val seller: String,
+    val sellerId: Long,
     val description: String,
-    val mark: String,
-    val color: Int, // Room stores it as Int
     val imageUri: String? = null,
-    val location: String = "Area Kampus",
-    val deliveryMethod: String = "COD Kampus"
-) {
-    fun toProduct(): Product = Product(
-        id = id,
-        title = title,
-        price = price,
-        category = category,
-        condition = condition,
-        seller = seller,
-        description = description,
-        mark = mark,
-        color = Color(color),
-        imageUri = imageUri,
-        location = location,
-        deliveryMethod = deliveryMethod
-    )
-}
+    val location: String = ProductDefaults.LOCATION,
+    val deliveryMethod: String = ProductDefaults.DELIVERY_METHOD,
+    val status: ProductStatus = ProductStatus.TERSEDIA,
+    val createdAt: Long = System.currentTimeMillis()
+)
 
-fun Product.toEntity(): ProductEntity = ProductEntity(
-    id = id,
+fun ProductInput.toEntity(): ProductEntity = ProductEntity(
     title = title,
     price = price,
-    category = category,
+    categoryId = categoryId,
     condition = condition,
-    seller = seller,
+    sellerId = sellerId,
     description = description,
-    mark = mark,
-    color = color.toArgb(),
     imageUri = imageUri,
     location = location,
     deliveryMethod = deliveryMethod
