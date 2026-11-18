@@ -19,11 +19,16 @@ import com.example.unimarket.ui.AppViewModelProvider
 import com.example.unimarket.ui.chat.ChatListScreen
 import com.example.unimarket.ui.chat.ChatScreen
 import com.example.unimarket.ui.chat.ChatViewModel
+import com.example.unimarket.ui.checkout.CheckoutRoute
+import com.example.unimarket.ui.checkout.CheckoutViewModel
 import com.example.unimarket.ui.detail.DetailScreen
 import com.example.unimarket.ui.home.HomeScreen
 import com.example.unimarket.ui.login.LoginRoute
 import com.example.unimarket.ui.menu.MenuScreen
 import com.example.unimarket.ui.myitems.MyItemsRoute
+import com.example.unimarket.ui.orders.RiwayatPembelianScreen
+import com.example.unimarket.ui.payment.PaymentScreen
+import com.example.unimarket.ui.payment.PaymentViewModel
 import com.example.unimarket.ui.post.PostScreen
 import com.example.unimarket.ui.post.PostViewModel
 import com.example.unimarket.ui.profile.ProfileScreen
@@ -102,7 +107,63 @@ fun AppNavigation(
                 },
                 onEdit = {
                     navController.navigate(Routes.post(productId))
+                },
+                onBuy = {
+                    navController.navigate(Routes.checkout(productId))
                 }
+            )
+        }
+
+        composable(
+            route = Routes.CHECKOUT,
+            arguments = listOf(
+                // Dibaca CheckoutViewModel lewat SavedStateHandle.
+                navArgument(CheckoutViewModel.PRODUCT_ID_ARG) { type = NavType.IntType }
+            )
+        ) {
+            CheckoutRoute(
+                onBack = { navController.popBackStack() },
+                onOpenPayment = { orderId ->
+                    navController.navigate(Routes.payment(orderId, openWebView = true)) {
+                        // Checkout tidak perlu dikunjungi lagi: kembali dari Pembayaran langsung ke Detail.
+                        popUpTo(Routes.CHECKOUT) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(
+            route = Routes.PAYMENT,
+            arguments = listOf(
+                // Dibaca PaymentViewModel lewat SavedStateHandle.
+                navArgument(PaymentViewModel.ORDER_ID_ARG) { type = NavType.StringType },
+                navArgument(PaymentViewModel.OPEN_WEB_VIEW_ARG) {
+                    type = NavType.BoolType
+                    defaultValue = false
+                }
+            )
+        ) {
+            PaymentScreen(
+                onBack = { navController.popBackStack() },
+                onOpenOrders = {
+                    navController.navigate(Routes.ORDERS) {
+                        popUpTo(Routes.HOME)
+                        launchSingleTop = true
+                    }
+                },
+                onGoHome = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.HOME) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
+        composable(Routes.ORDERS) {
+            RiwayatPembelianScreen(
+                onBack = { navController.popBackStack() },
+                onOrderClick = { orderId -> navController.navigate(Routes.payment(orderId)) }
             )
         }
 

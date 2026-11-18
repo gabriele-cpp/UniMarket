@@ -18,6 +18,7 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -141,6 +142,12 @@ fun MenuScreen(
             title = "Barang saya",
             note = "Kelola iklan & status barang",
             onClick = { onNavigate(Routes.MY_ITEMS) }
+        )
+        MenuItem(
+            icon = Icons.Outlined.ShoppingBag,
+            title = "Riwayat pembelian",
+            note = "Status pembayaran barang yang kamu beli",
+            onClick = { onNavigate(Routes.ORDERS) }
         )
         MenuItem(
             icon = Icons.Outlined.ChatBubbleOutline,

@@ -30,6 +30,10 @@ fun formatChatTime(timestamp: Long, now: Long = System.currentTimeMillis()): Str
     }
 }
 
+/** Tanggal dan jam lengkap, contoh "18 Nov 2026, 14:05". */
+fun formatDateTime(timestamp: Long): String =
+    SimpleDateFormat("d MMM yyyy, HH:mm", indonesianLocale).format(Date(timestamp))
+
 private val rupiahFormat: DecimalFormat by lazy {
     val symbols = DecimalFormatSymbols().apply {
         groupingSeparator = '.'

@@ -47,6 +47,10 @@ object AppColors {
     val StatusSoldBg = Color(0xFFF2D4D2)
     val StatusSoldText = Color(0xFF8C1D18)
 
+    // Info pembayaran sandbox
+    val InfoBg = Color(0xFFE3ECF7)
+    val InfoText = Color(0xFF1F3F66)
+
     // Tombol kontak WhatsApp (hijau gelap agar kontras di latar putih)
     val WhatsApp = Color(0xFF128C4A)
 }

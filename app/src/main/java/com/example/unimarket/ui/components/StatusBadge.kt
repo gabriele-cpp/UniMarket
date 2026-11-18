@@ -12,6 +12,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.unimarket.data.model.OrderStatus
 import com.example.unimarket.data.model.ProductStatus
 import com.example.unimarket.ui.theme.AppColors
 
@@ -25,6 +26,29 @@ fun statusColors(status: ProductStatus): Pair<Color, Color> = when (status) {
 @Composable
 fun StatusBadge(status: ProductStatus, modifier: Modifier = Modifier) {
     val (background, content) = statusColors(status)
+    Text(
+        text = status.label.uppercase(),
+        color = content,
+        fontFamily = FontFamily.Monospace,
+        fontWeight = FontWeight.Bold,
+        fontSize = 9.sp,
+        modifier = modifier
+            .clip(RoundedCornerShape(4.dp))
+            .background(background)
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+    )
+}
+
+/** Pasangan warna (latar, teks) untuk tiap status pesanan, memakai palet badge yang sama. */
+fun orderStatusColors(status: OrderStatus): Pair<Color, Color> = when (status) {
+    OrderStatus.PAID -> AppColors.StatusAvailableBg to AppColors.StatusAvailableText
+    OrderStatus.PENDING -> AppColors.StatusNegotiationBg to AppColors.StatusNegotiationText
+    OrderStatus.GAGAL, OrderStatus.KEDALUWARSA -> AppColors.StatusSoldBg to AppColors.StatusSoldText
+}
+
+@Composable
+fun OrderStatusBadge(status: OrderStatus, modifier: Modifier = Modifier) {
+    val (background, content) = orderStatusColors(status)
     Text(
         text = status.label.uppercase(),
         color = content,

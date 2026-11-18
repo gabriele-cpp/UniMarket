@@ -9,12 +9,15 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.unimarket.AppContainer
 import com.example.unimarket.UniMarketApplication
 import com.example.unimarket.ui.chat.ChatListViewModel
+import com.example.unimarket.ui.checkout.CheckoutViewModel
 import com.example.unimarket.ui.chat.ChatViewModel
 import com.example.unimarket.ui.detail.DetailViewModel
 import com.example.unimarket.ui.home.HomeViewModel
 import com.example.unimarket.ui.login.LoginViewModel
 import com.example.unimarket.ui.menu.MenuViewModel
 import com.example.unimarket.ui.navigation.SessionViewModel
+import com.example.unimarket.ui.orders.RiwayatPembelianViewModel
+import com.example.unimarket.ui.payment.PaymentViewModel
 import com.example.unimarket.ui.post.PostViewModel
 import com.example.unimarket.ui.profile.ProfileViewModel
 import com.example.unimarket.ui.register.RegisterViewModel
@@ -76,6 +79,19 @@ object AppViewModelProvider {
         }
         initializer {
             MenuViewModel(container().sessionRepository)
+        }
+        initializer {
+            val c = container()
+            // SavedStateHandle membawa argumen navigasi "productId".
+            CheckoutViewModel(createSavedStateHandle(), c.productRepository, c.sessionRepository, c.paymentRepository)
+        }
+        initializer {
+            // SavedStateHandle membawa argumen navigasi "orderId" dan "openWebView".
+            PaymentViewModel(createSavedStateHandle(), container().paymentRepository)
+        }
+        initializer {
+            val c = container()
+            RiwayatPembelianViewModel(c.paymentRepository, c.sessionRepository)
         }
     }
 }

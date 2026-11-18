@@ -3,6 +3,7 @@ package com.example.unimarket.ui.detail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.unimarket.data.model.Product
+import com.example.unimarket.data.model.PurchaseRules
 import com.example.unimarket.data.repository.ProductRepository
 import com.example.unimarket.data.repository.SessionRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -23,6 +24,8 @@ data class DetailUiState(
     val isOwner: Boolean = false,
     /** Dipakai sebagai buyerId saat membuka chat. */
     val currentUserId: Long? = null,
+    /** true jika tombol "Beli Sekarang" boleh tampil: barang TERSEDIA dan bukan milik sendiri. */
+    val canBuy: Boolean = false,
     val errorMessage: String? = null
 )
 
@@ -42,7 +45,8 @@ class DetailViewModel(
             product = product,
             isLoading = false,
             isOwner = product != null && product.sellerId == userId,
-            currentUserId = userId
+            currentUserId = userId,
+            canBuy = product != null && PurchaseRules.canBuy(product, userId)
         )
     }.catch { e ->
         ErrorMessages.log(e)

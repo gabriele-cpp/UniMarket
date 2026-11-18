@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -60,6 +61,7 @@ fun DetailScreen(
     /** Membuka chat dengan buyerId = user yang sedang login. */
     onChat: (buyerId: Long) -> Unit,
     onEdit: () -> Unit,
+    onBuy: () -> Unit,
     viewModel: DetailViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -101,13 +103,23 @@ fun DetailScreen(
         topBar = { UniMarketTopBar(title = "Detail barang", onBack = onBack) },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
-            BottomAppBar(
-                containerColor = Color.White,
-                tonalElevation = 8.dp
-            ) {
+            // Surface (bukan BottomAppBar yang tingginya tetap) agar muat dua baris tombol.
+            Surface(color = Color.White, shadowElevation = 8.dp) {
+              Column(modifier = Modifier.navigationBarsPadding().padding(vertical = 8.dp)) {
                 val buttonModifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 8.dp)
+                    .padding(horizontal = 20.dp, vertical = 4.dp)
+                if (uiState.canBuy) {
+                    Button(
+                        onClick = onBuy,
+                        modifier = buttonModifier.height(48.dp),
+                        shape = RoundedCornerShape(9.dp)
+                    ) {
+                        Icon(Icons.Outlined.ShoppingCart, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Beli Sekarang", fontWeight = FontWeight.Bold)
+                    }
+                }
                 when {
                     // Pemilik: tidak perlu menghubungi diri sendiri, tampilkan tombol edit.
                     uiState.isOwner -> OutlinedButton(
@@ -132,14 +144,26 @@ fun DetailScreen(
                         modifier = buttonModifier,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Button(
-                            onClick = { uiState.currentUserId?.let(onChat) },
-                            enabled = uiState.currentUserId != null,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text("HUBUNGI PENJUAL", maxLines = 1)
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+                        // Saat ada tombol Beli, tombol chat jadi sekunder (outlined).
+                        if (uiState.canBuy) {
+                            OutlinedButton(
+                                onClick = { uiState.currentUserId?.let(onChat) },
+                                enabled = uiState.currentUserId != null,
+                                modifier = Modifier.weight(1f),
+                                border = androidx.compose.foundation.BorderStroke(2.dp, Color.Black)
+                            ) {
+                                Text("HUBUNGI PENJUAL", maxLines = 1)
+                            }
+                        } else {
+                            Button(
+                                onClick = { uiState.currentUserId?.let(onChat) },
+                                enabled = uiState.currentUserId != null,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("HUBUNGI PENJUAL", maxLines = 1)
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+                            }
                         }
                         if (product.sellerPhone.isNotBlank()) {
                             OutlinedButton(
@@ -155,6 +179,7 @@ fun DetailScreen(
                         }
                     }
                 }
+              }
             }
         }
     ) { paddingValues ->

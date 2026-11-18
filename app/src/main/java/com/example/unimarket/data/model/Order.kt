@@ -34,6 +34,14 @@ data class Order(
     val createdAt: Long
 )
 
+/**
+ * URL tujuan Snap setelah pembayaran selesai (callbacks.finish di payment-server).
+ * Halaman ini tidak benar-benar ada: WebView mencegatnya untuk menutup halaman pembayaran.
+ */
+const val PAYMENT_FINISH_URL = "https://unimarket.app/payment-finish"
+
+fun isPaymentFinishUrl(url: String?): Boolean = url?.startsWith(PAYMENT_FINISH_URL) == true
+
 /** Membuat order_id unik untuk Midtrans. Fungsi murni supaya mudah dites. */
 fun generateOrderId(productId: Int, timestampMillis: Long): String = "UM-$timestampMillis-$productId"
 
