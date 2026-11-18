@@ -23,7 +23,7 @@ import com.example.unimarket.ui.detail.DetailScreen
 import com.example.unimarket.ui.home.HomeScreen
 import com.example.unimarket.ui.login.LoginRoute
 import com.example.unimarket.ui.menu.MenuScreen
-import com.example.unimarket.ui.myitems.MyItemsScreen
+import com.example.unimarket.ui.myitems.MyItemsRoute
 import com.example.unimarket.ui.post.PostScreen
 import com.example.unimarket.ui.post.PostViewModel
 import com.example.unimarket.ui.profile.ProfileScreen
@@ -123,7 +123,7 @@ fun AppNavigation(
         }
 
         composable(Routes.MY_ITEMS) {
-            MyItemsScreen(
+            MyItemsRoute(
                 onBack = { navController.popBackStack() },
                 onProductClick = { productId -> navController.navigate(Routes.detail(productId)) },
                 onEditClick = { productId -> navController.navigate(Routes.post(productId)) },

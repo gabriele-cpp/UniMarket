@@ -29,8 +29,12 @@ import com.example.unimarket.ui.components.Section
 import com.example.unimarket.ui.components.StatusBadge
 import com.example.unimarket.ui.components.UniMarketTopBar
 
+/**
+ * Route (tipis): menghubungkan MyItemsViewModel ke [MyItemsScreen] dan menampilkan
+ * pesan Snackbar dari ViewModel. Tidak diuji di UI test.
+ */
 @Composable
-fun MyItemsScreen(
+fun MyItemsRoute(
     onBack: () -> Unit,
     onProductClick: (Int) -> Unit,
     onEditClick: (Int) -> Unit,
@@ -48,6 +52,40 @@ fun MyItemsScreen(
         }
     }
 
+    MyItemsScreen(
+        uiState = uiState,
+        dialogState = dialogState,
+        onBack = onBack,
+        onProductClick = onProductClick,
+        onEditClick = onEditClick,
+        onPostClick = onPostClick,
+        onStatusRequest = viewModel::onStatusRequest,
+        onStatusSelected = viewModel::onStatusSelected,
+        onStatusDismiss = viewModel::onStatusDismiss,
+        onDeleteRequest = viewModel::onDeleteRequest,
+        onDeleteConfirm = viewModel::onDeleteConfirm,
+        onDeleteDismiss = viewModel::onDeleteDismiss,
+        snackbarHostState = snackbarHostState
+    )
+}
+
+/** Layar "Barang saya" stateless: menerima state + lambda, tanpa ViewModel. */
+@Composable
+fun MyItemsScreen(
+    uiState: MyItemsUiState,
+    dialogState: MyItemsDialogState,
+    onBack: () -> Unit,
+    onProductClick: (Int) -> Unit,
+    onEditClick: (Int) -> Unit,
+    onPostClick: () -> Unit,
+    onStatusRequest: (Product) -> Unit,
+    onStatusSelected: (ProductStatus) -> Unit,
+    onStatusDismiss: () -> Unit,
+    onDeleteRequest: (Product) -> Unit,
+    onDeleteConfirm: () -> Unit,
+    onDeleteDismiss: () -> Unit,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
+) {
     Scaffold(
         topBar = { UniMarketTopBar(title = "Barang saya", onBack = onBack) },
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -107,8 +145,8 @@ fun MyItemsScreen(
                         footer = {
                             ItemActions(
                                 onEdit = { onEditClick(product.id) },
-                                onChangeStatus = { viewModel.onStatusRequest(product) },
-                                onDelete = { viewModel.onDeleteRequest(product) }
+                                onChangeStatus = { onStatusRequest(product) },
+                                onDelete = { onDeleteRequest(product) }
                             )
                         }
                     )
@@ -119,19 +157,19 @@ fun MyItemsScreen(
 
     dialogState.pendingDelete?.let { product ->
         AlertDialog(
-            onDismissRequest = viewModel::onDeleteDismiss,
+            onDismissRequest = onDeleteDismiss,
             title = { Text("Hapus barang?") },
             text = { Text("\"${product.title}\" akan dihapus permanen dan tidak bisa dikembalikan.") },
             confirmButton = {
                 Button(
-                    onClick = viewModel::onDeleteConfirm,
+                    onClick = onDeleteConfirm,
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
                     Text("Hapus", color = MaterialTheme.colorScheme.onError)
                 }
             },
             dismissButton = {
-                TextButton(onClick = viewModel::onDeleteDismiss) { Text("Batal") }
+                TextButton(onClick = onDeleteDismiss) { Text("Batal") }
             }
         )
     }
@@ -139,8 +177,8 @@ fun MyItemsScreen(
     dialogState.statusPickerFor?.let { product ->
         StatusPickerDialog(
             product = product,
-            onSelect = viewModel::onStatusSelected,
-            onDismiss = viewModel::onStatusDismiss
+            onSelect = onStatusSelected,
+            onDismiss = onStatusDismiss
         )
     }
 }
