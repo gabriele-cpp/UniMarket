@@ -1,19 +1,29 @@
 package com.example.unimarket.ui.util
 
-import android.util.Patterns
-
 /**
  * Validasi input form. Setiap fungsi mengembalikan pesan error (bahasa Indonesia) atau null jika valid.
  */
 object Validators {
     const val MIN_PASSWORD_LENGTH = 6
 
+    /**
+     * Pola yang sama persis dengan android.util.Patterns.EMAIL_ADDRESS, ditulis ulang
+     * di sini agar validasi (dan ViewModel Login/Register yang memakainya) dapat diuji
+     * di unit test JVM, tempat kelas android.* tidak tersedia.
+     */
+    private val EMAIL_ADDRESS = Regex(
+        "[a-zA-Z0-9+._%\\-]{1,256}" +
+            "@" +
+            "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}" +
+            "(\\.[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25})+"
+    )
+
     fun name(value: String): String? =
         if (value.isBlank()) "Nama wajib diisi" else null
 
     fun email(value: String): String? = when {
         value.isBlank() -> "Email wajib diisi"
-        !Patterns.EMAIL_ADDRESS.matcher(value.trim()).matches() -> "Format email tidak valid"
+        !EMAIL_ADDRESS.matches(value.trim()) -> "Format email tidak valid"
         else -> null
     }
 

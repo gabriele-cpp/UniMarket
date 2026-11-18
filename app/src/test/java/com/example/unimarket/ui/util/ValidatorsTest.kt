@@ -9,8 +9,22 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-// Catatan: Validators.email() memakai android.util.Patterns sehingga tidak diuji di unit test JVM.
 class ValidatorsTest {
+    @Test
+    fun `email kampus yang valid diterima`() {
+        assertNull(Validators.email("budi@mahasiswa.ac.id"))
+        assertNull(Validators.email("  budi.santoso+jual@kampus.ac.id  "))   // spasi di tepi diabaikan
+    }
+
+    @Test
+    fun `email kosong atau salah format ditolak dengan pesan yang tepat`() {
+        assertEquals("Email wajib diisi", Validators.email("   "))
+        assertEquals("Format email tidak valid", Validators.email("budi"))
+        assertEquals("Format email tidak valid", Validators.email("budi@"))
+        assertEquals("Format email tidak valid", Validators.email("budi@kampus"))      // tanpa domain titik
+        assertEquals("Format email tidak valid", Validators.email("budi santoso@kampus.ac.id"))
+    }
+
     @Test
     fun phone_acceptsValidNumbers() {
         assertNull(Validators.phone("0812345678"))       // 10 digit
