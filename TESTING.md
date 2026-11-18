@@ -7,11 +7,13 @@
 **Kelompok:**
 **Nama aplikasi:** UniMarket
 
-| Anggota (Nama / NIM) | Username GitHub | Tugas testing | Berkas test yang ditulis |
-|----------------------|-----------------|---------------|--------------------------|
-| Gabriel Emil (PM) / NIM: 01082240002 | gabriele-cpp | Unit test `PostViewModel`, `LoginViewModel`, `RegisterViewModel` (lihat C2–C4) | `ui/post/PostViewModelTest.kt`, `ui/login/LoginViewModelTest.kt`, `ui/register/RegisterViewModelTest.kt` *(belum)* |
-| Kenny Lay (Backend) / NIM: 01082240010 | michael-zen (commit sebagai `Michael-Zen`) | Audit + refactor testability, dependensi, `MainDispatcherRule`, semua Fake + `TestData`, unit test `HomeViewModel` & `SearchViewModel`, file workflow CI | `testutil/*`, `ui/home/HomeViewModelTest.kt` (7), `ui/search/SearchViewModelTest.kt` (9), `ui/util/ValidatorsTest.kt` (+2 email) |
-| Daniel Gilberth Octavianus Latupeirissa (Frontend) / NIM: 01082240027 | oktodd | Pisah Route + Screen stateless untuk `LoginScreen` & `MyItemsScreen`, 2 UI test Compose, verifikasi GitHub Actions (hijau, badge, uji merah→revert) | `androidTest/…/ui/LoginScreenTest.kt`, `androidTest/…/ui/MyItemsScreenTest.kt` *(belum)* |
+| Anggota (Nama / NIM) | Username GitHub | Tugas testing (rencana pembagian awal) | Dikerjakan oleh | Berkas test |
+|----------------------|-----------------|----------------------------------------|-----------------|-------------|
+| Gabriel Emil (PM) / NIM: 01082240002 | gabriele-cpp | Unit test `PostViewModel`, `LoginViewModel`, `RegisterViewModel` (C2–C4) | Kenny Lay (pembagian diubah) | `ui/post/PostViewModelTest.kt` (13), `ui/login/LoginViewModelTest.kt` (8), `ui/register/RegisterViewModelTest.kt` (8) |
+| Kenny Lay (Backend) / NIM: 01082240010 | michael-zen (commit sebagai `Michael-Zen`) | Audit + refactor testability, dependensi, `MainDispatcherRule`, semua Fake + `TestData`, unit test `HomeViewModel` & `SearchViewModel`, workflow CI | Kenny Lay | `testutil/*`, `ui/home/HomeViewModelTest.kt` (7), `ui/search/SearchViewModelTest.kt` (9), `ui/util/ValidatorsTest.kt` (+2 email) |
+| Daniel Gilberth Octavianus Latupeirissa (Frontend) / NIM: 01082240027 | oktodd | Pisah Route + Screen stateless untuk `LoginScreen` & `MyItemsScreen`, 2 UI test Compose, verifikasi GitHub Actions | Kenny Lay (pembagian diubah) | `androidTest/…/ui/LoginScreenTest.kt` (5), `androidTest/…/ui/MyItemsScreenTest.kt` (8) |
+
+> Catatan kontribusi: pembagian di atas adalah rencana awal. Pada pelaksanaannya seluruh refactor, test, dan CI dikerjakan oleh Kenny Lay, sehingga riwayat commit test di branch ini berasal dari akun `Michael-Zen`.
 
 **Link repository:** https://github.com/gabriele-cpp/UniMarket
 **Jenis proyek** (centang yang sesuai, boleh lebih dari satu):
@@ -32,12 +34,13 @@ Centang kondisi proyek Anda **saat ini**. Setiap "Belum" harus diperbaiki
 | 2 | Repository punya **interface** (ViewModel bergantung pada interface, bukan `...Impl`) | ✔ | | — (`ProductRepository`, `CategoryRepository`, `UserRepository`, `SessionRepository`, `MessageRepository`; `Offline…Repository` hanya dirujuk `AppContainer`) |
 | 3 | ViewModel **tidak** memakai `Context`, `android.net.Uri`, `Log`, `Toast`, `FirebaseFirestore` langsung | ✔ (setelah refactor) | ✘ (awal) | `756d4b7 refactor: logger ErrorMessages dapat diganti agar ViewModel teruji di JVM` — sebelumnya semua ViewModel memanggil `ErrorMessages.log()` yang memakai `android.util.Log.e` sehingga skenario error gagal di test JVM (`Method e … not mocked`). `imageUri` sudah `String`. |
 | 4 | Logika (validasi, filter, hitung, format) ada di **fungsi murni**, bukan di Composable | ✔ | | — (`Validators`, `Formatters`, `PhoneUtils`; filter/sort dilakukan query Room) |
-| 5 | Screen yang akan diuji **stateless** (menerima state + lambda, bukan ViewModel) | | ⚠ | Semua 12 `…Screen` menerima ViewModel (signature multi-baris; tidak terdeteksi skrip). Dikerjakan Daniel: pisah Route + Screen untuk 2 screen yang diuji. |
+| 5 | Screen yang akan diuji **stateless** (menerima state + lambda, bukan ViewModel) | ✔ (2 screen yang diuji) | ⚠ (awal) | Awalnya semua 12 `…Screen` menerima ViewModel (signature multi-baris; tidak terdeteksi skrip). `a5b246c refactor: pisah LoginRoute dan LoginScreen stateless`, `e08c5b2 refactor: pisah MyItemsRoute dan MyItemsScreen stateless`. |
 | 6 | Semua `Icon`/`IconButton` yang dapat diketuk punya **`contentDescription`** | ✔ | | — 8 `contentDescription = null` sudah diperiksa: semuanya dekoratif (ikon di samping teks tombol/baris, `leadingIcon` pencarian) |
 
 **Hasil `cek_proyek.sh` pertama (Tahap 1):** ✔ 8 · ⚠ 2 · ✘ 7 — ✘: `kotlinx-coroutines-test`, `MainDispatcherRule`, kelas Fake, test ViewModel (0/5), UI test Compose (0/2), workflow CI, `TESTING.md`.
 **Setelah Tahap 2 (dependensi, MainDispatcherRule, refactor logger):** ✔ 12 · ⚠ 1 · ✘ 4 — sisa ✘: kelas Fake, test ViewModel, UI test Compose, workflow CI.
 **Setelah Tahap 3 (Fake + test Home/Search):** ✔ 14 · ⚠ 1 · ✘ 2 — sisa ✘: UI test Compose, workflow CI.
+**Akhir (semua test + CI):** ✔ 16 · ⚠ 1 · ✘ 0 — ⚠ tersisa: 8 `contentDescription = null` dekoratif.
 
 **Temuan tambahan (baris 3):** `Validators.email()` memakai `android.util.Patterns`, padahal dipanggil `LoginViewModel` dan `RegisterViewModel` → test Login/Register dengan email valid akan crash di JVM. Diperbaiki di `0ebdad1 refactor: validasi email tanpa android.util.Patterns agar teruji di JVM` (regex disalin persis, perilaku sama, + 2 test email).
 
@@ -45,22 +48,22 @@ Centang kondisi proyek Anda **saat ini**. Setiap "Belum" harus diperbaiki
 
 | Jenis | Nama kelas / fungsi | Berkas | Prioritas (1–3) |
 |-------|---------------------|--------|:---------------:|
-| ViewModel | `HomeViewModel` — **Kenny ✔** | `app/src/test/java/com/example/unimarket/ui/home/HomeViewModelTest.kt` | 1 |
-| ViewModel | `SearchViewModel` — **Kenny ✔** | `app/src/test/java/com/example/unimarket/ui/search/SearchViewModelTest.kt` | 1 |
-| ViewModel | `PostViewModel` — Gabriel | `app/src/test/java/com/example/unimarket/ui/post/PostViewModelTest.kt` | 1 |
-| ViewModel | `LoginViewModel` — Gabriel | `app/src/test/java/com/example/unimarket/ui/login/LoginViewModelTest.kt` | 1 |
-| ViewModel | `RegisterViewModel` — Gabriel | `app/src/test/java/com/example/unimarket/ui/register/RegisterViewModelTest.kt` | 2 |
+| ViewModel | `HomeViewModel` — **✔ 7 test** | `app/src/test/java/com/example/unimarket/ui/home/HomeViewModelTest.kt` | 1 |
+| ViewModel | `SearchViewModel` — **✔ 9 test** | `app/src/test/java/com/example/unimarket/ui/search/SearchViewModelTest.kt` | 1 |
+| ViewModel | `PostViewModel` — **✔ 13 test** | `app/src/test/java/com/example/unimarket/ui/post/PostViewModelTest.kt` | 1 |
+| ViewModel | `LoginViewModel` — **✔ 8 test** | `app/src/test/java/com/example/unimarket/ui/login/LoginViewModelTest.kt` | 1 |
+| ViewModel | `RegisterViewModel` — **✔ 8 test** | `app/src/test/java/com/example/unimarket/ui/register/RegisterViewModelTest.kt` | 2 |
 | Fungsi murni | `Validators`, `Formatters`, `PhoneUtils` (sudah ada; + test email oleh Kenny) | `app/src/test/java/com/example/unimarket/ui/util/` | 2 |
 | Mapper | — (proyek Room tanpa DTO API; tidak ada mapper terpisah yang perlu diuji) | — | 3 |
-| Screen (UI) | `LoginScreen` (stateless) — Daniel | `app/src/androidTest/java/com/example/unimarket/ui/LoginScreenTest.kt` | 1 |
-| Screen (UI) | `MyItemsScreen` (stateless) — Daniel | `app/src/androidTest/java/com/example/unimarket/ui/MyItemsScreenTest.kt` | 1 |
-| DAO (tantangan) | `ProductDao.searchProducts` / `getMarketplaceProducts` (bonus, belum dibagi) | `app/src/androidTest/java/com/example/unimarket/data/ProductDaoTest.kt` | 3 |
+| Screen (UI) | `LoginScreen` (stateless) — **✔ 5 UI test** | `app/src/androidTest/java/com/example/unimarket/ui/LoginScreenTest.kt` | 1 |
+| Screen (UI) | `MyItemsScreen` (stateless) — **✔ 8 UI test** | `app/src/androidTest/java/com/example/unimarket/ui/MyItemsScreenTest.kt` | 1 |
+| DAO (tantangan) | `ProductDao.searchProducts` / `getMarketplaceProducts` (bonus, belum dibuat) | `app/src/androidTest/java/com/example/unimarket/data/ProductDaoTest.kt` | 3 |
 
 ## C. Matriks Skenario ViewModel
 
 Minimal **5 skenario** dari ViewModel proyek Anda. Wajib ada sukses, gagal, dan kosong.
 
-### C1. HomeViewModel & SearchViewModel — Kenny ✔ (16 test lulus)
+### C1. HomeViewModel & SearchViewModel — ✔ 16 test lulus
 
 | No | ViewModel | Skenario (Given / When / Then) | Jenis | Nama test |
 |----|-----------|--------------------------------|-------|-----------|
@@ -81,7 +84,9 @@ Minimal **5 skenario** dari ViewModel proyek Anda. Wajib ada sukses, gagal, dan 
 | 15 | Search | When kategori Buku + "kalku" / Then hanya "Buku Kalkulus" | Aksi pengguna | `filter kategori digabung dengan kata kunci` |
 | 16 | Search | When urutan Harga termurah / Then harga naik | Aksi pengguna | `urutan harga termurah mengurutkan hasil dari harga terendah` |
 
-### C2. PostViewModel — Gabriel (belum)
+### C2. PostViewModel — ✔ 13 test lulus
+
+Semua skenario di bawah diimplementasikan, ditambah `kategori pertama otomatis terpilih saat form dibuka`; skenario 12 diperluas menjadi `selama menyimpan state saving aktif dan publish ganda diabaikan`.
 
 Dibuat dengan `PostViewModel(SavedStateHandle(), productRepo, categoryRepo, sessionRepo)`; mode edit: `SavedStateHandle(mapOf(PostViewModel.PRODUCT_ID_ARG to id))`. `uiState` berupa `MutableStateFlow`, jadi **tidak perlu** `start()`; cukup `runCurrent()` setelah aksi.
 
@@ -100,7 +105,9 @@ Dibuat dengan `PostViewModel(SavedStateHandle(), productRepo, categoryRepo, sess
 | 11 | `onPriceChange("Rp 12.500abc")` / Then `price = "12500"` | Aksi pengguna | `input harga hanya menyimpan digit` |
 | 12 | Given `writeDelayMillis = 1000` / When publish / Then `isSaving = true`; setelah `advanceTimeBy(1001)` → `false` | Loading | `selama menyimpan state saving aktif` |
 
-### C3. LoginViewModel — Gabriel (belum)
+### C3. LoginViewModel — ✔ 8 test lulus
+
+Semua skenario di bawah diimplementasikan, ditambah `email ditulis kapital dan berspasi tetap dikenali` dan `format email salah ditolak sebelum menghubungi database`.
 
 `LoginViewModel(userRepo, sessionRepo)`; user terdaftar: `FakeUserRepository(listOf(user(id = 1, email = "budi@kampus.ac.id") to "rahasia1"))`, sesi: `FakeSessionRepository(null, userRepo)`.
 
@@ -113,7 +120,9 @@ Dibuat dengan `PostViewModel(SavedStateHandle(), productRepo, categoryRepo, sess
 | 5 | Given error tampil / When `onEmailChange(...)` / Then `emailError` dan `generalError` hilang | Aksi pengguna | `mengetik ulang menghapus pesan error` |
 | 6 | Given `delayMillis = 1000` / Then `isLoading` true lalu false setelah `advanceTimeBy` | Loading | `selama proses login state loading aktif` |
 
-### C4. RegisterViewModel — Gabriel (belum)
+### C4. RegisterViewModel — ✔ 8 test lulus
+
+Semua skenario di bawah diimplementasikan, ditambah `password kurang dari 6 karakter ditolak` dan `mengubah email menghapus pesan email sudah terdaftar`.
 
 | No | Skenario (Given / When / Then) | Jenis | Nama test (usulan) |
 |----|--------------------------------|-------|--------------------|
@@ -135,41 +144,42 @@ Dibuat dengan `PostViewModel(SavedStateHandle(), productRepo, categoryRepo, sess
 | `android.util.Log` (lewat `ErrorMessages.log`) | `ErrorLogRule` | fake | `Log` tidak ada di JVM; error yang dicatat dapat di-assert |
 | `Dispatchers.Main` | `MainDispatcherRule` | stub | `viewModelScope` butuh Main; memberi jam virtual untuk `advanceTimeBy` |
 
-### Petunjuk untuk anggota
+### C5. UI test Compose (androidTest) — ✔ 13 test lulus di emulator Pixel 8
 
-**Gabriel (unit test ViewModel)**
-1. `git pull` branch `pertemuan-13`; semua fake sudah ada di `app/src/test/java/com/example/unimarket/testutil/`.
-2. Contoh pola lengkap: `ui/home/HomeViewModelTest.kt` dan `ui/search/SearchViewModelTest.kt`. Wajib pasang `@get:Rule val mainRule = MainDispatcherRule()` dan `@get:Rule val errorLog = ErrorLogRule()`.
-3. Jalankan `./gradlew testDebugUnitTest --tests "*PostViewModelTest"`. Untuk tiap test: ubah sementara nilai expected → pastikan merah → kembalikan.
-4. Commit per ViewModel: `test: unit test PostViewModel`, `test: unit test LoginViewModel`, `test: unit test RegisterViewModel`.
+| Screen | Skenario | Nama test |
+|--------|----------|-----------|
+| Login | Pesan error validasi & login tampil | `pesanErrorValidasiDanLoginTampilDiLayar` |
+| Login | Ketuk MASUK memanggil `onLogin` | `ketukMasuk_memanggilOnLogin` |
+| Login | Saat loading teks MASUK diganti indikator | `saatLoading_teksMasukDigantiIndikatorLoading` |
+| Login | Mengetik email mengirim teks ke callback | `mengetikEmail_mengirimTeksKeCallback` |
+| Login | Ketuk "Belum punya akun? Daftar" | `ketukDaftar_membukaHalamanRegister` |
+| My Items | Daftar kosong + tombol JUAL BARANG | `daftarKosong_menampilkanPesanDanTombolJualBarang` |
+| My Items | Judul barang & ringkasan "1 aktif · 1 terjual" | `daftarBarang_menampilkanJudulDanRingkasanStatus` |
+| My Items | Pesan error tampil | `pesanErrorTampil` |
+| My Items | Loading tidak menampilkan pesan kosong | `saatLoading_tidakMenampilkanPesanKosong` |
+| My Items | Ketuk barang mengirim id yang benar | `ketukBarang_mengirimIdYangBenar` |
+| My Items | Ketuk HAPUS mengirim barang yang dipilih | `ketukHapus_mengirimBarangYangDipilih` |
+| My Items | Dialog konfirmasi → Hapus memanggil konfirmasi | `dialogKonfirmasiHapus_tombolHapusMemanggilKonfirmasi` |
+| My Items | Tombol kembali memanggil `onBack` | `tombolKembali_memanggilOnBack` |
 
-**Daniel (UI test + CI)**
-1. Refactor (commit terpisah per screen, mis. `refactor: pisah LoginRoute dan LoginScreen stateless`):
-   - `LoginRoute(onLoginSuccess, onRegisterClick, viewModel = viewModel(factory = …))` → memanggil `LoginScreen(uiState, onEmailChange, onPasswordChange, onLogin, onRegisterClick)`. `LaunchedEffect(isLoggedIn)` tetap di Route.
-   - `MyItemsRoute(…, viewModel)` → `MyItemsScreen(uiState, dialogState, onBack, onProductClick, onEditClick, onPostClick, onDeleteRequest, onDeleteConfirm, onDeleteDismiss, onStatusRequest, onStatusSelected, onStatusDismiss, onMessageShown)`.
-   - Ganti pemanggilan di `ui/navigation/AppNavigation.kt` menjadi `LoginRoute` / `MyItemsRoute`. Pola: PANDUAN bagian A5.
-2. Template: `../ch13-kit/kit/app/src/androidTest/java/com/example/proyekku/ui/ItemListScreenTest.kt` → `app/src/androidTest/java/com/example/unimarket/ui/`. Bungkus dengan `UniMarketTheme { … }`.
-3. Skenario minimal:
-   - **LoginScreen**: `emailError` tampil sebagai teks; klik **MASUK** memanggil `onLogin`; klik **Belum punya akun? Daftar** memanggil `onRegisterClick`; saat `isLoading` teks MASUK tidak tampil (tombol berisi indikator loading).
-   - **MyItemsScreen**: daftar kosong menampilkan **Belum ada barang** dan klik **JUAL BARANG** memanggil `onPostClick`; judul barang tampil; `errorMessage` menampilkan **Terjadi kesalahan**; klik barang memanggil `onProductClick(id)`.
-4. Jalankan emulator → `./gradlew connectedDebugAndroidTest`. Commit: `test: UI test LoginScreen dan MyItemsScreen`.
-5. CI: file `.github/workflows/android-test.yml` disiapkan Kenny (Tahap 5). Tugas Daniel: pastikan run **hijau** di tab Actions, tambah badge di `README.md`, lalu uji jaring pengaman (commit yang sengaja merusak validasi → CI merah → `git revert`) dan simpan kedua link di bagian D.
+**Bukti test dapat gagal:** pada setiap test baru (29 unit test Post/Login/Register, 16 unit test Home/Search, 13 UI test), assertion pertama dibalik sementara (mis. `assertEquals` → `assertNotEquals`, `assertIsDisplayed` → `assertDoesNotExist`). Semua test tersebut menjadi merah, lalu dikembalikan dan hijau lagi.
 
 ## D. Hasil
 
 | Jenis test | Jumlah | Lulus | Perintah |
 |------------|:------:|:-----:|----------|
-| Unit test (JVM) | | | `./gradlew testDebugUnitTest` |
-| UI test (Compose) | | | `./gradlew connectedDebugAndroidTest` |
-| Integration test (DAO) | | | `./gradlew connectedDebugAndroidTest` |
+| Unit test (JVM) | 63 | 63 | `./gradlew testDebugUnitTest` |
+| UI test (Compose) | 13 (+1 `ExampleInstrumentedTest`) | 14 | `./gradlew connectedDebugAndroidTest` (emulator Pixel 8) |
+| Integration test (DAO) | 0 | — | belum dibuat (bonus) |
 
-- Screenshot hasil test Android Studio: `docs/test-unit.png`, `docs/test-ui.png`
-- Link run GitHub Actions yang **hijau**:
-- (Bonus) Coverage baris ViewModel: ……… %
+Rincian unit test: `PostViewModelTest` 13, `SearchViewModelTest` 9, `LoginViewModelTest` 8, `RegisterViewModelTest` 8, `HomeViewModelTest` 7, `ValidatorsTest` 9, `PhoneUtilsTest` 5, `FormattersTest` 3, `ExampleUnitTest` 1.
 
-## E. Refleksi (singkat, 3–5 kalimat per butir)
+- Link run GitHub Actions: https://github.com/gabriele-cpp/UniMarket/actions/workflows/android-test.yml
+- (Bonus) Coverage baris ViewModel yang diuji (`./gradlew createDebugUnitTestCoverageReport`): Home 100%, Search 100%, Login 100%, Register 100%, Post 77% → gabungan **143/155 = 92%**. Seluruh 12 ViewModel: 143/314 = 46% (Chat, ChatList, Detail, MyItems, Profile, Menu, Session belum diuji).
 
-1. **Bug apa yang ditemukan test?** (Jika ada: skenario, penyebab, dan commit perbaikannya.)
-2. **Refactor apa yang Anda lakukan agar kode dapat diuji?** Apa yang paling sulit?
-3. **Satu test yang menurut Anda paling bernilai**, dan mengapa (perilaku apa yang dilindunginya)?
-4. **Apa yang belum diuji** dan mengapa? (Jujur; ini bukan pengurang nilai.)
+## E. Refleksi
+
+1. **Bug apa yang ditemukan test?** Tidak ditemukan bug logika di ViewModel yang diuji; semua Flow sudah memakai `.catch` dan operasi tulis sudah dibungkus `try/catch`. Test justru menemukan dua ketergantungan tersembunyi pada kelas Android (`android.util.Log` di `ErrorMessages.log` dan `android.util.Patterns` di `Validators.email`) yang membuat skenario error serta validasi email tidak dapat diuji di JVM.
+2. **Refactor apa yang dilakukan?** Pencatat error dibuat dapat diganti (`756d4b7`), regex email dipindah ke Kotlin (`0ebdad1`), dan `LoginScreen`/`MyItemsScreen` dipisah menjadi Route + Screen stateless (`a5b246c`, `e08c5b2`). Bagian tersulit adalah menemukan ketergantungan tidak langsung: ViewModel tidak mengimpor kelas Android, tetapi fungsi utilitas yang dipanggilnya mengimpor, sehingga tidak terdeteksi `cek_proyek.sh`.
+3. **Test paling bernilai:** `selama menyimpan state saving aktif dan publish ganda diabaikan` (PostViewModel) melindungi dari iklan tersimpan dua kali saat tombol diketuk berulang, dan `kata kunci baru diterapkan setelah debounce 300 ms` (SearchViewModel) melindungi perilaku waktu tunda yang sulit dicek manual.
+4. **Apa yang belum diuji:** ViewModel Chat, ChatList, Detail, MyItems, Profile, Menu, dan Session; serta query SQL `ProductDao` (filter di `FakeProductRepository` hanya meniru query tersebut, kebenaran SQL aslinya baru terbukti dengan DAO test Room in-memory). UI test belum dijalankan di CI karena butuh emulator.
