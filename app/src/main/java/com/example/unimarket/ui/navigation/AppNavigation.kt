@@ -21,7 +21,7 @@ import com.example.unimarket.ui.chat.ChatScreen
 import com.example.unimarket.ui.chat.ChatViewModel
 import com.example.unimarket.ui.detail.DetailScreen
 import com.example.unimarket.ui.home.HomeScreen
-import com.example.unimarket.ui.login.LoginScreen
+import com.example.unimarket.ui.login.LoginRoute
 import com.example.unimarket.ui.menu.MenuScreen
 import com.example.unimarket.ui.myitems.MyItemsScreen
 import com.example.unimarket.ui.post.PostScreen
@@ -52,7 +52,7 @@ fun AppNavigation(
         startDestination = start
     ) {
         composable(Routes.LOGIN) {
-            LoginScreen(
+            LoginRoute(
                 onLoginSuccess = { navController.navigateClearingBackStack(Routes.HOME) },
                 onRegisterClick = { navController.navigate(Routes.REGISTER) }
             )

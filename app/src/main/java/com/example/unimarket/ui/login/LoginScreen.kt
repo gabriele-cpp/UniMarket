@@ -21,8 +21,12 @@ import com.example.unimarket.ui.AppViewModelProvider
 import com.example.unimarket.ui.components.Brand
 import com.example.unimarket.ui.components.Caption
 
+/**
+ * Route (tipis): menghubungkan ViewModel ke [LoginScreen] dan navigasi setelah login.
+ * Tidak diuji di UI test; logikanya ada di LoginViewModel (unit test).
+ */
 @Composable
-fun LoginScreen(
+fun LoginRoute(
     onLoginSuccess: () -> Unit,
     onRegisterClick: () -> Unit,
     viewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory)
@@ -33,6 +37,24 @@ fun LoginScreen(
         if (uiState.isLoggedIn) onLoginSuccess()
     }
 
+    LoginScreen(
+        uiState = uiState,
+        onEmailChange = viewModel::onEmailChange,
+        onPasswordChange = viewModel::onPasswordChange,
+        onLogin = viewModel::onLogin,
+        onRegisterClick = onRegisterClick
+    )
+}
+
+/** Layar login stateless: hanya menampilkan [uiState] dan meneruskan aksi lewat lambda. */
+@Composable
+fun LoginScreen(
+    uiState: LoginUiState,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onLogin: () -> Unit,
+    onRegisterClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -57,7 +79,7 @@ fun LoginScreen(
 
         OutlinedTextField(
             value = uiState.email,
-            onValueChange = viewModel::onEmailChange,
+            onValueChange = onEmailChange,
             label = { Text("Email Kampus") },
             placeholder = { Text("nama@mahasiswa.ac.id") },
             singleLine = true,
@@ -69,7 +91,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             value = uiState.password,
-            onValueChange = viewModel::onPasswordChange,
+            onValueChange = onPasswordChange,
             label = { Text("Password") },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
@@ -91,7 +113,7 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
         Button(
-            onClick = viewModel::onLogin,
+            onClick = onLogin,
             enabled = !uiState.isLoading,
             modifier = Modifier.fillMaxWidth()
         ) {
