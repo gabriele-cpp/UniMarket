@@ -21,6 +21,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            // (Bonus) laporan coverage unit test: ./gradlew createDebugUnitTestCoverageReport
+            enableUnitTestCoverage = true
+        }
         release {
             optimization {
                 enable = false
@@ -61,11 +65,19 @@ dependencies {
     // Image loading (Coil)
     implementation(libs.coil.compose)
 
+    // ── Unit test (src/test, JVM) ──────────────────────────────────────────
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
+
+    // ── Instrumented test (src/androidTest, emulator/HP) ───────────────────
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
+    androidTestImplementation(libs.room.testing)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
