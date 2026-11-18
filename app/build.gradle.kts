@@ -1,8 +1,22 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
 }
+
+// PAYMENT_BASE_URL dibaca dari local.properties (tidak di-commit). Jika tidak ada,
+// dipakai alamat laptop dari emulator, sehingga build di CI tetap berhasil.
+val localProperties = Properties().apply {
+    providers.fileContents(rootProject.layout.projectDirectory.file("local.properties"))
+        .asText.orNull?.let { load(it.reader()) }
+}
+val paymentBaseUrl: String = localProperties.getProperty("PAYMENT_BASE_URL")
+    ?.trim()
+    ?.takeIf { it.isNotEmpty() }
+    ?.let { if (it.endsWith("/")) it else "$it/" }   // Retrofit mewajibkan akhiran "/"
+    ?: "http://10.0.2.2:3000/"
 
 android {
     namespace = "com.example.unimarket"
@@ -18,6 +32,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "PAYMENT_BASE_URL", "\"$paymentBaseUrl\"")
     }
 
     buildTypes {
@@ -37,6 +53,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -64,6 +81,10 @@ dependencies {
 
     // Image loading (Coil)
     implementation(libs.coil.compose)
+
+    // Jaringan: payment-server (Midtrans sandbox)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
 
     // ── Unit test (src/test, JVM) ──────────────────────────────────────────
     testImplementation(libs.junit)

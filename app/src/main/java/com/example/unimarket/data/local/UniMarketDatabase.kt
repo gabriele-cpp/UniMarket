@@ -7,8 +7,15 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 @Database(
-    entities = [UserEntity::class, CategoryEntity::class, ProductEntity::class, MessageEntity::class],
-    version = 5,
+    entities = [
+        UserEntity::class,
+        CategoryEntity::class,
+        ProductEntity::class,
+        MessageEntity::class,
+        OrderEntity::class
+    ],
+    // v6: tabel orders (pembayaran Midtrans)
+    version = 6,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -17,6 +24,7 @@ abstract class UniMarketDatabase : RoomDatabase() {
     abstract fun categoryDao(): CategoryDao
     abstract fun productDao(): ProductDao
     abstract fun messageDao(): MessageDao
+    abstract fun orderDao(): OrderDao
 
     companion object {
         @Volatile

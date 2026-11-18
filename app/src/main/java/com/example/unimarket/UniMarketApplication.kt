@@ -5,10 +5,13 @@ import com.example.unimarket.data.local.DatabaseSeeder
 import com.example.unimarket.data.local.InternalImageStorage
 import com.example.unimarket.data.local.UniMarketDatabase
 import com.example.unimarket.data.local.UserPreferences
+import com.example.unimarket.data.remote.PaymentApi
 import com.example.unimarket.data.repository.CategoryRepository
 import com.example.unimarket.data.repository.DefaultSessionRepository
 import com.example.unimarket.data.repository.MessageRepository
 import com.example.unimarket.data.repository.OfflineMessageRepository
+import com.example.unimarket.data.repository.OnlinePaymentRepository
+import com.example.unimarket.data.repository.PaymentRepository
 import com.example.unimarket.data.repository.SessionRepository
 import com.example.unimarket.data.repository.OfflineCategoryRepository
 import com.example.unimarket.data.repository.OfflineProductRepository
@@ -46,6 +49,7 @@ interface AppContainer {
     val productRepository: ProductRepository
     val sessionRepository: SessionRepository
     val messageRepository: MessageRepository
+    val paymentRepository: PaymentRepository
 }
 
 class AppDataContainer(private val application: Application) : AppContainer {
@@ -68,6 +72,16 @@ class AppDataContainer(private val application: Application) : AppContainer {
 
     override val messageRepository: MessageRepository by lazy {
         OfflineMessageRepository(database.messageDao(), database.productDao())
+    }
+
+    override val paymentRepository: PaymentRepository by lazy {
+        OnlinePaymentRepository(
+            orderDao = database.orderDao(),
+            productDao = database.productDao(),
+            userDao = database.userDao(),
+            // Alamat payment-server dari local.properties (PAYMENT_BASE_URL), lihat app/build.gradle.kts
+            api = PaymentApi.create(BuildConfig.PAYMENT_BASE_URL)
+        )
     }
 
     override val sessionRepository: SessionRepository by lazy {
