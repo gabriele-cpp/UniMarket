@@ -17,9 +17,20 @@ object ErrorMessages {
 
     private const val TAG = "UniMarket"
 
-    /** Catat detail teknis ke Logcat; user hanya melihat pesan yang ramah. */
+    /** Pencatat bawaan aplikasi: ke Logcat. */
+    val logcatLogger: (Throwable) -> Unit = { Log.e(TAG, it.message, it) }
+
+    /**
+     * Pencatat yang dipakai [log]. Default ke Logcat; di unit test JVM diganti
+     * (lihat testutil/ErrorLogRule) karena android.util.Log tidak tersedia di sana
+     * ("Method e in android.util.Log not mocked").
+     */
+    @Volatile
+    var logger: (Throwable) -> Unit = logcatLogger
+
+    /** Catat detail teknis; user hanya melihat pesan yang ramah. */
     fun log(throwable: Throwable) {
-        Log.e(TAG, throwable.message, throwable)
+        logger(throwable)
     }
 }
 
