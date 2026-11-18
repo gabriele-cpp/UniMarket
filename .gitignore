@@ -13,3 +13,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Payment server (Midtrans)
+payment-server/.env
+payment-server/node_modules
