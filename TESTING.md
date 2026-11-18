@@ -9,8 +9,8 @@
 
 | Anggota (Nama / NIM) | Username GitHub | Tugas testing | Berkas test yang ditulis |
 |----------------------|-----------------|---------------|--------------------------|
-| Gabriel Emil (PM) / NIM: … | | | |
-| Kenny Lay (Backend) / NIM: … | Michael-Zen | | |
+| Gabriel Emil (PM) / NIM: … | gabriele-cpp | | |
+| Kenny Lay (Backend) / NIM: … | michael-zen (commit sebagai `Michael-Zen`) | | |
 | Daniel Gilberth Octavianus Latupeirissa (Frontend) / NIM: … | | | |
 
 **Link repository:** https://github.com/gabriele-cpp/UniMarket
@@ -30,12 +30,13 @@ Centang kondisi proyek Anda **saat ini**. Setiap "Belum" harus diperbaiki
 |----|-------------|:-----:|:-----:|------------------|
 | 1 | Setiap ViewModel menerima repository lewat **constructor** (bukan membuat sendiri / `getInstance()`) | ✔ | | — (12 ViewModel dibuat lewat `AppViewModelProvider` + `AppContainer`) |
 | 2 | Repository punya **interface** (ViewModel bergantung pada interface, bukan `...Impl`) | ✔ | | — (`ProductRepository`, `CategoryRepository`, `UserRepository`, `SessionRepository`, `MessageRepository`; `Offline…Repository` hanya dirujuk `AppContainer`) |
-| 3 | ViewModel **tidak** memakai `Context`, `android.net.Uri`, `Log`, `Toast`, `FirebaseFirestore` langsung | | ✘ | Tidak langsung: semua ViewModel memanggil `ErrorMessages.log()` yang memakai `android.util.Log.e` → skenario error di test JVM gagal dengan `Method e … not mocked`. `imageUri` sudah `String`. Perbaikan di Tahap 2. |
+| 3 | ViewModel **tidak** memakai `Context`, `android.net.Uri`, `Log`, `Toast`, `FirebaseFirestore` langsung | ✔ (setelah refactor) | ✘ (awal) | `756d4b7 refactor: logger ErrorMessages dapat diganti agar ViewModel teruji di JVM` — sebelumnya semua ViewModel memanggil `ErrorMessages.log()` yang memakai `android.util.Log.e` sehingga skenario error gagal di test JVM (`Method e … not mocked`). `imageUri` sudah `String`. |
 | 4 | Logika (validasi, filter, hitung, format) ada di **fungsi murni**, bukan di Composable | ✔ | | — (`Validators`, `Formatters`, `PhoneUtils`; filter/sort dilakukan query Room) |
 | 5 | Screen yang akan diuji **stateless** (menerima state + lambda, bukan ViewModel) | | ⚠ | Semua 12 `…Screen` menerima ViewModel (signature multi-baris; tidak terdeteksi skrip). Dikerjakan Daniel: pisah Route + Screen untuk 2 screen yang diuji. |
 | 6 | Semua `Icon`/`IconButton` yang dapat diketuk punya **`contentDescription`** | ✔ | | — 8 `contentDescription = null` sudah diperiksa: semuanya dekoratif (ikon di samping teks tombol/baris, `leadingIcon` pencarian) |
 
 **Hasil `cek_proyek.sh` pertama (Tahap 1):** ✔ 8 · ⚠ 2 · ✘ 7 — ✘: `kotlinx-coroutines-test`, `MainDispatcherRule`, kelas Fake, test ViewModel (0/5), UI test Compose (0/2), workflow CI, `TESTING.md`.
+**Setelah Tahap 2 (dependensi, MainDispatcherRule, refactor logger):** ✔ 12 · ⚠ 1 · ✘ 4 — sisa ✘: kelas Fake, test ViewModel, UI test Compose, workflow CI.
 
 ## B. Daftar Unit yang Akan Diuji
 
