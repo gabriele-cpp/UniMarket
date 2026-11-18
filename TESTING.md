@@ -9,9 +9,9 @@
 
 | Anggota (Nama / NIM) | Username GitHub | Tugas testing | Berkas test yang ditulis |
 |----------------------|-----------------|---------------|--------------------------|
-| Gabriel Emil (PM) / NIM: … | gabriele-cpp | Unit test `PostViewModel`, `LoginViewModel`, `RegisterViewModel` (lihat C2–C4) | `ui/post/PostViewModelTest.kt`, `ui/login/LoginViewModelTest.kt`, `ui/register/RegisterViewModelTest.kt` *(belum)* |
-| Kenny Lay (Backend) / NIM: … | michael-zen (commit sebagai `Michael-Zen`) | Audit + refactor testability, dependensi, `MainDispatcherRule`, semua Fake + `TestData`, unit test `HomeViewModel` & `SearchViewModel`, file workflow CI | `testutil/*`, `ui/home/HomeViewModelTest.kt` (7), `ui/search/SearchViewModelTest.kt` (9), `ui/util/ValidatorsTest.kt` (+2 email) |
-| Daniel Gilberth Octavianus Latupeirissa (Frontend) / NIM: … | … | Pisah Route + Screen stateless untuk `LoginScreen` & `MyItemsScreen`, 2 UI test Compose, verifikasi GitHub Actions (hijau, badge, uji merah→revert) | `androidTest/…/ui/LoginScreenTest.kt`, `androidTest/…/ui/MyItemsScreenTest.kt` *(belum)* |
+| Gabriel Emil (PM) / NIM: 01082240002 | gabriele-cpp | Unit test `PostViewModel`, `LoginViewModel`, `RegisterViewModel` (lihat C2–C4) | `ui/post/PostViewModelTest.kt`, `ui/login/LoginViewModelTest.kt`, `ui/register/RegisterViewModelTest.kt` *(belum)* |
+| Kenny Lay (Backend) / NIM: 01082240010 | michael-zen (commit sebagai `Michael-Zen`) | Audit + refactor testability, dependensi, `MainDispatcherRule`, semua Fake + `TestData`, unit test `HomeViewModel` & `SearchViewModel`, file workflow CI | `testutil/*`, `ui/home/HomeViewModelTest.kt` (7), `ui/search/SearchViewModelTest.kt` (9), `ui/util/ValidatorsTest.kt` (+2 email) |
+| Daniel Gilberth Octavianus Latupeirissa (Frontend) / NIM: 01082240027 | oktodd | Pisah Route + Screen stateless untuk `LoginScreen` & `MyItemsScreen`, 2 UI test Compose, verifikasi GitHub Actions (hijau, badge, uji merah→revert) | `androidTest/…/ui/LoginScreenTest.kt`, `androidTest/…/ui/MyItemsScreenTest.kt` *(belum)* |
 
 **Link repository:** https://github.com/gabriele-cpp/UniMarket
 **Jenis proyek** (centang yang sesuai, boleh lebih dari satu):
