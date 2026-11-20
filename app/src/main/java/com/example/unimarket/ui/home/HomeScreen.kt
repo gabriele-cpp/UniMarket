@@ -119,13 +119,14 @@ fun HomeScreen(
                 // "Lihat semua" membuka halaman Cari (filter kategori + urutan lengkap).
                 Section(title = "Kategori", action = "Lihat semua", onActionClick = onSearchClick)
                 
+                val options: List<Category?> = remember(uiState.categories) {
+                    listOf<Category?>(null) + uiState.categories
+                }
                 androidx.compose.foundation.lazy.LazyRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // null = opsi "Semua" (hanya di UI, bukan baris tabel categories)
-                    val options: List<Category?> = listOf<Category?>(null) + uiState.categories
-                    items(options) { category ->
+                    items(options, key = { it?.id ?: -1 }) { category ->
                         FilterButton(
                             title = category?.name ?: ALL_CATEGORIES_LABEL,
                             active = uiState.selectedCategoryId == category?.id,

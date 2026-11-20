@@ -30,12 +30,32 @@ class UserPreferences(context: Context) {
         prefs.edit().putLong(KEY_LOGGED_IN_USER_ID, userId).apply()
     }
 
+    fun getAccessToken(): String? =
+        prefs.getString(KEY_ACCESS_TOKEN, null)
+
+    fun setAccessToken(token: String?) {
+        prefs.edit().putString(KEY_ACCESS_TOKEN, token).apply()
+    }
+
+    fun getUserUuid(): String? =
+        prefs.getString(KEY_USER_UUID, null)
+
+    fun setUserUuid(uuid: String?) {
+        prefs.edit().putString(KEY_USER_UUID, uuid).apply()
+    }
+
     fun clearSession() {
-        prefs.edit().remove(KEY_LOGGED_IN_USER_ID).apply()
+        prefs.edit()
+            .remove(KEY_LOGGED_IN_USER_ID)
+            .remove(KEY_ACCESS_TOKEN)
+            .remove(KEY_USER_UUID)
+            .apply()
     }
 
     companion object {
         private const val KEY_LOGGED_IN_USER_ID = "logged_in_user_id"
+        private const val KEY_ACCESS_TOKEN = "access_token"
+        private const val KEY_USER_UUID = "user_uuid"
         private const val NO_USER = -1L
 
         private const val LEGACY_IS_LOGGED_IN = "is_logged_in"

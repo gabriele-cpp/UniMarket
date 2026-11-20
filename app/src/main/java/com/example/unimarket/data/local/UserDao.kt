@@ -13,6 +13,9 @@ interface UserDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertUser(user: UserEntity): Long
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertUser(user: UserEntity): Long
+
     @Update
     suspend fun updateUser(user: UserEntity)
 
@@ -24,6 +27,9 @@ interface UserDao {
 
     @Query("SELECT * FROM users WHERE email = :email COLLATE NOCASE LIMIT 1")
     suspend fun getUserByEmail(email: String): UserEntity?
+
+    @Query("SELECT * FROM users WHERE name = :name COLLATE NOCASE LIMIT 1")
+    suspend fun getUserByName(name: String): UserEntity?
 
     @Query("SELECT COUNT(*) FROM users")
     suspend fun count(): Int

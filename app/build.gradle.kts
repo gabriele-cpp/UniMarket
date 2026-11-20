@@ -18,6 +18,17 @@ val paymentBaseUrl: String = localProperties.getProperty("PAYMENT_BASE_URL")
     ?.let { if (it.endsWith("/")) it else "$it/" }   // Retrofit mewajibkan akhiran "/"
     ?: "http://10.0.2.2:3000/"
 
+val supabaseUrl: String = localProperties.getProperty("SUPABASE_URL")
+    ?.trim()
+    ?.takeIf { it.isNotEmpty() }
+    ?.let { if (it.endsWith("/")) it else "$it/" }
+    ?: "https://yyusrnyhfhganmwazaqc.supabase.co/"
+
+val supabaseKey: String = localProperties.getProperty("SUPABASE_KEY")
+    ?.trim()
+    ?.takeIf { it.isNotEmpty() }
+    ?: "sb_publishable_KpqI-fKLKhz_7B3JACUm-w_QgA1YfeR"
+
 android {
     namespace = "com.example.unimarket"
     compileSdk {
@@ -34,6 +45,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "PAYMENT_BASE_URL", "\"$paymentBaseUrl\"")
+        buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
+        buildConfigField("String", "SUPABASE_KEY", "\"$supabaseKey\"")
     }
 
     buildTypes {
