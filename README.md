@@ -55,23 +55,18 @@ npm start           # server berjalan di http://localhost:3000
 
 Cek: `Invoke-RestMethod http://localhost:3000/health` harus mengembalikan `ok: True`. Biarkan jendela ini terbuka selama mengetes aplikasi.
 
-### Menjalankan online dengan Render Free
+### Menjalankan online dengan Cloudflare Workers Free
 
-Repo ini sudah memiliki `render.yaml` di root. Render akan membuat Web Service dari folder `payment-server`, memakai `npm ci` dan `npm start`, lalu memeriksa `/health`. Server otomatis bind ke port Render dan `0.0.0.0`.
+`payment-server/worker.js` adalah adapter Workers untuk endpoint Midtrans yang sama. Konfigurasi ada di `payment-server/wrangler.jsonc`. Cloudflare menyebut Workers Free bisa dimulai tanpa kartu; batas gratisnya 100.000 request per hari. [Harga dan batas Workers](https://developers.cloudflare.com/workers/platform/pricing/)
 
-1. Push perubahan project ke branch GitHub yang ingin dipakai untuk deploy.
-2. Di Render Dashboard pilih **New → Blueprint**, lalu hubungkan repo UniMarket dan branch tersebut. Pilih `render.yaml` di root repo.
-3. Saat diminta, isi `MIDTRANS_SERVER_KEY` dengan **Server Key Sandbox** (`SB-Mid-server-...`). Jangan memasukkan file `.env` atau commit key ke GitHub.
-4. Tunggu deploy selesai, lalu cek `https://<nama-service>.onrender.com/health`; respons harus `{ "ok": true }`.
-5. Di `local.properties` pada root Android project, tambahkan URL HTTPS dari service Render:
+1. Push perubahan project ke GitHub.
+2. Di Cloudflare Dashboard buka **Workers & Pages → Create application → Connect to Git** lalu pilih repo UniMarket dan branch yang berisi konfigurasi ini.
+3. Atur **Root directory** ke `payment-server` dan **Build command** ke `npx --yes wrangler deploy`. Nama Worker harus `unimarket-payment`, sesuai `wrangler.jsonc`.
+4. Setelah Worker terbentuk, buka **Settings → Variables and Secrets**, tambah `MIDTRANS_SERVER_KEY` sebagai **Secret** dengan Server Key Sandbox (`SB-Mid-server-...`), lalu deploy ulang. Jangan memasukkan key ke GitHub atau aplikasi Android.
+5. URL Worker berbentuk `https://unimarket-payment.<akun>.workers.dev`. Pastikan `/health` mengembalikan `{ "ok": true }`.
+6. Isi `PAYMENT_BASE_URL` di `local.properties` dengan URL tersebut dan akhiri dengan `/`, lalu Sync Gradle dan build ulang aplikasi.
 
-   ```properties
-   PAYMENT_BASE_URL=https://<nama-service>.onrender.com/
-   ```
-
-6. Sync Gradle dan build ulang aplikasi. Emulator maupun HP bisa memakai URL publik ini dari jaringan mana saja.
-
-> **Catatan paket gratis:** service Render Free akan tidur setelah 15 menit tanpa trafik. Request pertama setelah tidur dapat memerlukan sekitar satu menit untuk membangunkan server. Ini cocok untuk demo; jangan gunakan konfigurasi demo ini untuk pembayaran produksi.
+Endpoint online masih untuk demo Sandbox. Jangan gunakan key Production dengan backend demo ini.
 
 ### 2. Mengisi PAYMENT_BASE_URL
 
