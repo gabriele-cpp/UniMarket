@@ -228,3 +228,5 @@ app.listen(PORT, () => {
   console.log(`payment-server berjalan di http://localhost:${PORT}`);
   console.log(`Dari emulator Android: http://10.0.2.2:${PORT}`);
 });
+
+export default app;

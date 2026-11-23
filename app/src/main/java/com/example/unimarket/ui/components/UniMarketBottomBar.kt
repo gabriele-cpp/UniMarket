@@ -32,33 +32,39 @@ fun UniMarketBottomBar(
         color = Color.White,
         shadowElevation = 0.dp
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(66.dp)
-                .border(2.dp, Color.Black)
+                .navigationBarsPadding()
         ) {
-            BottomBarItem(
-                modifier = Modifier.weight(1f),
-                icon = Icons.Outlined.Home,
-                label = "BERANDA",
-                isActive = currentRoute == Routes.HOME,
-                onClick = onHomeClick
-            )
-            BottomBarItem(
-                modifier = Modifier.weight(1f),
-                icon = Icons.Outlined.AddCircleOutline,
-                label = "JUAL",
-                isActive = currentRoute == Routes.POST,
-                onClick = onPostClick
-            )
-            BottomBarItem(
-                modifier = Modifier.weight(1f),
-                icon = Icons.Outlined.Menu,
-                label = "MENU",
-                isActive = currentRoute == Routes.MENU,
-                onClick = onMenuClick
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(66.dp)
+                    .border(2.dp, Color.Black)
+            ) {
+                BottomBarItem(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Outlined.Home,
+                    label = "BERANDA",
+                    isActive = currentRoute == Routes.HOME,
+                    onClick = onHomeClick
+                )
+                BottomBarItem(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Outlined.AddCircleOutline,
+                    label = "JUAL",
+                    isActive = currentRoute == Routes.POST,
+                    onClick = onPostClick
+                )
+                BottomBarItem(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Outlined.Menu,
+                    label = "MENU",
+                    isActive = currentRoute == Routes.MENU,
+                    onClick = onMenuClick
+                )
+            }
         }
     }
 }

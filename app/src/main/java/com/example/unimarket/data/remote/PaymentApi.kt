@@ -1,5 +1,6 @@
 package com.example.unimarket.data.remote
 
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
@@ -21,11 +22,23 @@ interface PaymentApi {
 
     companion object {
         /** [baseUrl] wajib diakhiri "/", contoh "http://10.0.2.2:3000/". */
-        fun create(baseUrl: String): PaymentApi = Retrofit.Builder()
-            .baseUrl(baseUrl)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(PaymentApi::class.java)
+        fun create(baseUrl: String): PaymentApi {
+            val client = OkHttpClient.Builder()
+                .addInterceptor { chain ->
+                    val request = chain.request().newBuilder()
+                        .addHeader("bypass-tunnel-reminder", "true")
+                        .build()
+                    chain.proceed(request)
+                }
+                .build()
+
+            return Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .client(client)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+                .create(PaymentApi::class.java)
+        }
     }
 }
 
