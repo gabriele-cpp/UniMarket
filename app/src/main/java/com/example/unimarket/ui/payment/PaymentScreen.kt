@@ -169,8 +169,13 @@ private fun SnapWebView(url: String, onFinished: () -> Unit, modifier: Modifier 
             modifier = Modifier.fillMaxSize(),
             factory = { context ->
                 WebView(context).apply {
-                    settings.javaScriptEnabled = true
-                    settings.domStorageEnabled = true
+                    setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
+                    settings.apply {
+                        javaScriptEnabled = true
+                        domStorageEnabled = true
+                        databaseEnabled = true
+                        cacheMode = android.webkit.WebSettings.LOAD_DEFAULT
+                    }
                     webViewClient = object : WebViewClient() {
                         private var finished = false
 

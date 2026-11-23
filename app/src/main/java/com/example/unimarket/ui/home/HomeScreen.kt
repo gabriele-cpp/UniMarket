@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -28,7 +29,12 @@ import java.util.*
 
 @Composable
 private fun Header(onProfileClick: () -> Unit) {
-    Column {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .statusBarsPadding()
+            .padding(horizontal = 20.dp)
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -60,6 +66,7 @@ private fun Header(onProfileClick: () -> Unit) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onProductClick: (Int) -> Unit,
@@ -72,6 +79,9 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
+        topBar = {
+            Header(onProfileClick = onProfileClick)
+        },
         bottomBar = {
             UniMarketBottomBar(
                 onHomeClick = {},
@@ -81,81 +91,86 @@ fun HomeScreen(
             )
         }
     ) { paddingValues ->
-        LazyColumn(
+        PullToRefreshBox(
+            isRefreshing = uiState.isRefreshing,
+            onRefresh = { viewModel.refresh() },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 20.dp)
         ) {
-            item {
-                Header(onProfileClick = onProfileClick)
-                
-                val today = remember {
-                    val locale = Locale.forLanguageTag("id-ID")
-                    val formatter = SimpleDateFormat("EEEE, d MMMM", locale)
-                    formatter.format(Date()).uppercase()
-                }
-                
-                Text(
-                    text = today,
-                    modifier = Modifier.padding(top = 24.dp),
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 10.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                
-                Text(
-                    text = "Temukan\nyang dibutuhkan.",
-                    fontSize = 36.sp,
-                    color = Color.Black,
-                    lineHeight = 43.sp,
-                    letterSpacing = (-1.6).sp,
-                    modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
-                )
-                
-                SearchButton(onClick = onSearchClick)
-                
-                Spacer(modifier = Modifier.height(32.dp))
-                // "Lihat semua" membuka halaman Cari (filter kategori + urutan lengkap).
-                Section(title = "Kategori", action = "Lihat semua", onActionClick = onSearchClick)
-                
-                val options: List<Category?> = remember(uiState.categories) {
-                    listOf<Category?>(null) + uiState.categories
-                }
-                androidx.compose.foundation.lazy.LazyRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(options, key = { it?.id ?: -1 }) { category ->
-                        FilterButton(
-                            title = category?.name ?: ALL_CATEGORIES_LABEL,
-                            active = uiState.selectedCategoryId == category?.id,
-                            onClick = { viewModel.onCategorySelect(category?.id) }
-                        )
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 20.dp)
+            ) {
+                item {
+                    val today = remember {
+                        val locale = Locale.forLanguageTag("id-ID")
+                        val formatter = SimpleDateFormat("EEEE, d MMMM", locale)
+                        formatter.format(Date()).uppercase()
                     }
-                }
+                    
+                    Text(
+                        text = today,
+                        modifier = Modifier.padding(top = 24.dp),
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 10.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    
+                    Text(
+                        text = "Temukan\nyang dibutuhkan.",
+                        fontSize = 36.sp,
+                        color = Color.Black,
+                        lineHeight = 43.sp,
+                        letterSpacing = (-1.6).sp,
+                        modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
+                    )
+                    
+                    SearchButton(onClick = onSearchClick)
+                    
+                    Spacer(modifier = Modifier.height(32.dp))
+                    // "Lihat semua" membuka halaman Cari (filter kategori + urutan lengkap).
+                    Section(title = "Kategori", action = "Lihat semua", onActionClick = onSearchClick)
+                    
+                    val options: List<Category?> = remember(uiState.categories) {
+                        listOf<Category?>(null) + uiState.categories
+                    }
+                    androidx.compose.foundation.lazy.LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(options, key = { it?.id ?: -1 }) { category ->
+                            FilterButton(
+                                title = category?.name ?: ALL_CATEGORIES_LABEL,
+                                active = uiState.selectedCategoryId == category?.id,
+                                onClick = { viewModel.onCategorySelect(category?.id) }
+                            )
+                        }
+                    }
 
-                Spacer(modifier = Modifier.height(32.dp))
-                Section(
-                    title = if (uiState.selectedCategoryId == null) "Baru ditambahkan" else "Kategori: ${uiState.selectedCategoryName}",
-                    action = "${uiState.products.size} barang"
-                )
-            }
-
-            if (uiState.errorMessage != null) {
-                item {
-                    EmptyState(title = "Terjadi kesalahan", note = uiState.errorMessage!!)
-                }
-            } else if (uiState.products.isEmpty()) {
-                item {
-                    EmptyState(
-                        title = "Belum ada barang",
-                        note = "Belum ada barang pada kategori ${uiState.selectedCategoryName}."
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Section(
+                        title = if (uiState.selectedCategoryId == null) "Baru ditambahkan" else "Kategori: ${uiState.selectedCategoryName}",
+                        action = "${uiState.products.size} barang"
                     )
                 }
-            } else {
-                items(uiState.products, key = { it.id }) { product ->
-                    ProductCard(product = product, onClick = { onProductClick(product.id) })
+
+                if (uiState.errorMessage != null) {
+                    item {
+                        EmptyState(title = "Terjadi kesalahan", note = uiState.errorMessage!!)
+                    }
+                } else if (uiState.products.isEmpty()) {
+                    item {
+                        EmptyState(
+                            title = "Belum ada barang",
+                            note = "Belum ada barang pada kategori ${uiState.selectedCategoryName}."
+                        )
+                    }
+                } else {
+                    items(uiState.products, key = { it.id }) { product ->
+                        ProductCard(product = product, onClick = { onProductClick(product.id) })
+                    }
                 }
             }
         }

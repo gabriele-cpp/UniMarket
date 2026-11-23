@@ -100,6 +100,13 @@ class PaymentViewModel(
                 e.rethrowIfCancellation()
                 PaymentResult.Error(PaymentErrors.UNKNOWN, e)
             }
+            if (result is PaymentResult.Success && result.data.status == OrderStatus.PENDING) {
+                // Beri jeda 1.5 detik lalu coba refresh sekali lagi secara otomatis jika Midtrans sandbox masih memproses settlement
+                kotlinx.coroutines.delay(1500)
+                try {
+                    paymentRepository.refreshStatus(orderId)
+                } catch (_: Exception) {}
+            }
             // Status baru sampai ke UI lewat observeOrder; di sini cukup urus pesan error.
             _uiState.update {
                 if (result is PaymentResult.Error) {

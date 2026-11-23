@@ -98,6 +98,12 @@ interface ProductDao {
     suspend fun deleteProduct(product: ProductEntity)
 
     /**
+     * Ubah status tanpa cek pemilik (misalnya saat barang laku dibeli).
+     */
+    @Query("UPDATE products SET status = :status WHERE id = :productId")
+    suspend fun setStatus(productId: Int, status: ProductStatus): Int
+
+    /**
      * Ubah status hanya jika barang milik [sellerId].
      * @return jumlah baris yang berubah (0 = bukan pemilik / barang tidak ada).
      */

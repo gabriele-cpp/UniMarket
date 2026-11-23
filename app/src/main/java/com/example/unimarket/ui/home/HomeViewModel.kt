@@ -16,12 +16,14 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 data class HomeUiState(
     val products: List<Product> = emptyList(),
     val categories: List<Category> = emptyList(),
     /** null = "Semua". */
     val selectedCategoryId: Int? = null,
+    val isRefreshing: Boolean = false,
     val errorMessage: String? = null
 ) {
     val selectedCategoryName: String
@@ -34,6 +36,7 @@ class HomeViewModel(
 ) : ViewModel() {
 
     private val selectedCategoryId = MutableStateFlow<Int?>(null)
+    private val _isRefreshing = MutableStateFlow(false)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val productsFlow = selectedCategoryId.flatMapLatest { categoryId ->
@@ -43,9 +46,15 @@ class HomeViewModel(
     val uiState: StateFlow<HomeUiState> = combine(
         productsFlow,
         categoryRepository.getAllCategories(),
-        selectedCategoryId
-    ) { products, categories, selectedId ->
-        HomeUiState(products = products, categories = categories, selectedCategoryId = selectedId)
+        selectedCategoryId,
+        _isRefreshing
+    ) { products, categories, selectedId, isRefreshing ->
+        HomeUiState(
+            products = products,
+            categories = categories,
+            selectedCategoryId = selectedId,
+            isRefreshing = isRefreshing
+        )
     }.catch { e ->
         ErrorMessages.log(e)
         emit(HomeUiState(errorMessage = ErrorMessages.LOAD_FAILED))
@@ -58,5 +67,18 @@ class HomeViewModel(
     /** categoryId null = tampilkan semua kategori. */
     fun onCategorySelect(categoryId: Int?) {
         selectedCategoryId.value = categoryId
+    }
+
+    fun refresh() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            try {
+                productRepository.refresh()
+            } catch (e: Exception) {
+                ErrorMessages.log(e)
+            } finally {
+                _isRefreshing.value = false
+            }
+        }
     }
 }

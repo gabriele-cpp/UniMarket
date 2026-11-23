@@ -25,6 +25,7 @@ class OnlinePaymentRepository(
     private val productDao: ProductDao,
     private val userDao: UserDao,
     private val api: PaymentApi,
+    private val productRepository: ProductRepository? = null,
     private val clock: () -> Long = System::currentTimeMillis
 ) : PaymentRepository {
 
@@ -88,7 +89,10 @@ class OnlinePaymentRepository(
         // Status tidak dikenal (null) = biarkan status di perangkat apa adanya.
         when (val newStatus = mapMidtransStatus(response.transactionStatus) ?: order.status) {
             order.status -> Unit
-            OrderStatus.PAID -> orderDao.markPaid(orderId, order.productId)
+            OrderStatus.PAID -> {
+                orderDao.markPaid(orderId, order.productId)
+                productRepository?.markProductSold(order.productId)
+            }
             else -> orderDao.updateStatus(orderId, newStatus)
         }
         return loadOrder(orderId)

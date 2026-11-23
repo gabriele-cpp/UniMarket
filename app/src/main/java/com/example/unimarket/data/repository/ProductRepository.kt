@@ -47,6 +47,12 @@ interface ProductRepository {
 
     /** Hanya berhasil jika [requesterId] adalah pemilik barang. */
     suspend fun deleteProduct(productId: Int, requesterId: Long): OwnershipResult
+
+    /** Memaksa sinkronisasi katalog produk dari server/Supabase. */
+    suspend fun refresh(): Unit = Unit
+
+    /** Menandai barang telah laku terjual (dipanggil saat pembayaran lunas). */
+    suspend fun markProductSold(productId: Int): Unit = Unit
 }
 
 /** Hasil operasi yang hanya boleh dilakukan pemilik barang. */

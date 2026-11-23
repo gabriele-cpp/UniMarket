@@ -82,6 +82,12 @@ class SupabaseProductRepository(
                     val sellerName = dto.seller.trim().ifEmpty { "Penjual" }
                     val sellerId = getOrCreateSellerId(sellerName)
 
+                    val productStatus = if (dto.status?.equals("TERJUAL", ignoreCase = true) == true) {
+                        ProductStatus.TERJUAL
+                    } else {
+                        ProductStatus.TERSEDIA
+                    }
+
                     ProductEntity(
                         id = dto.id?.toInt() ?: 0,
                         title = dto.title,
@@ -93,7 +99,7 @@ class SupabaseProductRepository(
                         imageUri = dto.image_uri,
                         location = dto.location,
                         deliveryMethod = dto.delivery_method,
-                        status = ProductStatus.TERSEDIA,
+                        status = productStatus,
                         createdAt = parseCreatedAt(dto.created_at)
                     )
                 }
@@ -243,7 +249,36 @@ class SupabaseProductRepository(
         requesterId: Long,
         status: ProductStatus
     ): OwnershipResult = withContext(Dispatchers.IO) {
-        offlineRepo.updateStatus(productId, requesterId, status)
+        val result = offlineRepo.updateStatus(productId, requesterId, status)
+        if (result == OwnershipResult.SUCCESS) {
+            try {
+                supabaseApi.updateProduct(
+                    idFilter = "eq.$productId",
+                    body = mapOf("status" to status.name)
+                )
+            } catch (e: Exception) {
+                android.util.Log.e("SupabaseProduct", "Gagal update status di Supabase: ${e.message}")
+            }
+        }
+        result
+    }
+
+    override suspend fun refresh() {
+        syncWithSupabase(force = true)
+    }
+
+    override suspend fun markProductSold(productId: Int) {
+        withContext(Dispatchers.IO) {
+            productDao.setStatus(productId, ProductStatus.TERJUAL)
+            try {
+                supabaseApi.updateProduct(
+                    idFilter = "eq.$productId",
+                    body = mapOf("status" to ProductStatus.TERJUAL.name)
+                )
+            } catch (e: Exception) {
+                android.util.Log.e("SupabaseProduct", "Gagal sinkron status TERJUAL ke Supabase: ${e.message}")
+            }
+        }
     }
 
     override suspend fun deleteProduct(productId: Int, requesterId: Long): OwnershipResult =

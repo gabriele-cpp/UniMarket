@@ -113,7 +113,7 @@ class SupabaseUserRepository(
                 val updated = existing.copy(
                     name = profileName,
                     phone = if (profilePhone.isNotEmpty()) profilePhone else existing.phone,
-                    passwordHash = PasswordHasher.hash(password)
+                    passwordHash = if (existing.passwordHash.isNotEmpty()) existing.passwordHash else PasswordHasher.hash(password)
                 )
                 userDao.updateUser(updated)
                 updated

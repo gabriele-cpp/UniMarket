@@ -131,7 +131,8 @@ class AppDataContainer(
             productDao = database.productDao(),
             userDao = database.userDao(),
             // Alamat payment-server dari local.properties (PAYMENT_BASE_URL), lihat app/build.gradle.kts
-            api = PaymentApi.create(BuildConfig.PAYMENT_BASE_URL)
+            api = PaymentApi.create(BuildConfig.PAYMENT_BASE_URL),
+            productRepository = productRepository
         )
     }
 

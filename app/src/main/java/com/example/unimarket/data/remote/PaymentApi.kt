@@ -1,5 +1,6 @@
 package com.example.unimarket.data.remote
 
+import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -7,6 +8,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import java.util.concurrent.TimeUnit
 
 /**
  * Endpoint payment-server (folder payment-server/ di repo). Server Key Midtrans
@@ -24,6 +26,11 @@ interface PaymentApi {
         /** [baseUrl] wajib diakhiri "/", contoh "http://10.0.2.2:3000/". */
         fun create(baseUrl: String): PaymentApi {
             val client = OkHttpClient.Builder()
+                .connectionPool(ConnectionPool(5, 5, TimeUnit.MINUTES))
+                .connectTimeout(12, TimeUnit.SECONDS)
+                .readTimeout(15, TimeUnit.SECONDS)
+                .writeTimeout(15, TimeUnit.SECONDS)
+                .retryOnConnectionFailure(true)
                 .addInterceptor { chain ->
                     val request = chain.request().newBuilder()
                         .addHeader("bypass-tunnel-reminder", "true")

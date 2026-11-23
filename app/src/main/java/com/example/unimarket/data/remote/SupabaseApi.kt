@@ -55,6 +55,13 @@ interface SupabaseApi {
         @Header("Prefer") prefer: String = "return=representation"
     ): List<SupabaseProductDto>
 
+    @PATCH("rest/v1/products")
+    suspend fun updateProduct(
+        @Query("id") idFilter: String,
+        @Body body: Map<String, @JvmSuppressWildcards Any>,
+        @Header("Prefer") prefer: String = "return=representation"
+    ): List<SupabaseProductDto>
+
     @DELETE("rest/v1/products")
     suspend fun deleteProduct(
         @Query("id") idFilter: String
@@ -165,6 +172,7 @@ data class SupabaseProductDto(
     val image_uri: String? = null,
     val mark: String = "UM",
     val color_hex: String = "#D7E7F5",
+    val status: String? = "TERSEDIA",
     val created_at: String? = null
 )
 
