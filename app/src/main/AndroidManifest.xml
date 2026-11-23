@@ -2,8 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Memanggil payment-server (Midtrans sandbox) -->
+    <!-- Memanggil payment-server (Midtrans sandbox) dan Supabase -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Menampilkan notifikasi sistem untuk chat dan pembelian -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".UniMarketApplication"

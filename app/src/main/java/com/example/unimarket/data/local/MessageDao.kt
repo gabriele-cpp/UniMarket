@@ -56,4 +56,15 @@ interface MessageDao {
         """
     )
     fun getConversations(userId: Long): Flow<List<Conversation>>
+
+    @Query(
+        """
+        SELECT COUNT(*) FROM messages m
+        INNER JOIN products p ON p.id = m.productId
+        WHERE (m.buyerId = :userId OR p.sellerId = :userId)
+          AND m.senderId != :userId
+          AND m.timestamp > :lastReadTimestamp
+        """
+    )
+    fun observeUnreadCount(userId: Long, lastReadTimestamp: Long): Flow<Int>
 }

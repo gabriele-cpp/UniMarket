@@ -23,9 +23,14 @@ data class ChatListUiState(
 )
 
 class ChatListViewModel(
-    messageRepository: MessageRepository,
+    private val messageRepository: MessageRepository,
     sessionRepository: SessionRepository
 ) : ViewModel() {
+
+    init {
+        // Tandai semua pesan sebagai terbaca ketika user membuka daftar chat
+        messageRepository.markMessagesAsRead()
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val conversationsFlow = sessionRepository.currentUserId.flatMapLatest { userId ->

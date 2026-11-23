@@ -3,21 +3,42 @@ package com.example.unimarket.data.repository
 import com.example.unimarket.data.local.MessageDao
 import com.example.unimarket.data.local.MessageEntity
 import com.example.unimarket.data.local.ProductDao
+import com.example.unimarket.data.local.UserPreferences
 import com.example.unimarket.data.model.Conversation
 import com.example.unimarket.data.model.Message
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 
 class OfflineMessageRepository(
     private val messageDao: MessageDao,
-    private val productDao: ProductDao
+    private val productDao: ProductDao,
+    private val userPreferences: UserPreferences? = null
 ) : MessageRepository {
+
+    private val lastReadTimestampFlow = MutableStateFlow(
+        userPreferences?.getLastReadChatTimestamp() ?: 0L
+    )
 
     override fun getMessages(productId: Int, buyerId: Long): Flow<List<Message>> =
         messageDao.getMessages(productId, buyerId).map { list -> list.map { it.toMessage() } }
 
     override fun getConversations(userId: Long): Flow<List<Conversation>> =
         messageDao.getConversations(userId)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun observeUnreadCount(userId: Long): Flow<Int> =
+        lastReadTimestampFlow.flatMapLatest { ts ->
+            messageDao.observeUnreadCount(userId, ts)
+        }
+
+    override fun markMessagesAsRead() {
+        val now = System.currentTimeMillis()
+        userPreferences?.setLastReadChatTimestamp(now)
+        lastReadTimestampFlow.value = now
+    }
 
     override suspend fun sendMessage(
         productId: Int,

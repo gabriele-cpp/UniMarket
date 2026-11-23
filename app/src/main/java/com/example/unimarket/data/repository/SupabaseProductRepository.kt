@@ -104,6 +104,23 @@ class SupabaseProductRepository(
                         createdAt = parseCreatedAt(dto.created_at)
                     )
                 }
+                // Periksa apakah ada barang milik user saat ini yang terjual/berkurang stoknya oleh pembeli lain
+                val currentUserId = userPreferences.getLoggedInUserId()
+                if (currentUserId != null) {
+                    for (entity in entities) {
+                        if (entity.sellerId == currentUserId) {
+                            val localBefore = productDao.getProductEntityById(entity.id)
+                            if (localBefore != null && (entity.stock < localBefore.stock || (localBefore.status == ProductStatus.TERSEDIA && entity.status == ProductStatus.TERJUAL))) {
+                                com.example.unimarket.ui.util.NotificationHelper.showOrderNotification(
+                                    context = context,
+                                    title = "Barang Terjual! 📦",
+                                    messageText = "Ada yang membeli barang '${entity.title}'!"
+                                )
+                            }
+                        }
+                    }
+                }
+
                 productDao.upsertAll(entities)
                 lastSyncTimestamp = System.currentTimeMillis()
             }

@@ -45,6 +45,7 @@ fun MenuScreen(
     viewModel: MenuViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val userInitials by viewModel.userInitials.collectAsState()
+    val unreadCount by viewModel.unreadCount.collectAsState()
     var showLogoutDialog by remember { mutableStateOf(false) }
 
     if (showLogoutDialog) {
@@ -153,6 +154,8 @@ fun MenuScreen(
             icon = Icons.Outlined.ChatBubbleOutline,
             title = "Pesan",
             note = "Chat dengan penjual",
+            showBadge = unreadCount > 0,
+            badgeCount = unreadCount,
             onClick = { onNavigate(Routes.CHATS) }
         )
         MenuItem(
@@ -198,6 +201,8 @@ private fun MenuItem(
     icon: ImageVector,
     title: String,
     note: String,
+    showBadge: Boolean = false,
+    badgeCount: Int = 0,
     onClick: () -> Unit
 ) {
     Column {
@@ -216,6 +221,26 @@ private fun MenuItem(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(imageVector = icon, contentDescription = title)
+                if (showBadge) {
+                    Box(
+                        modifier = Modifier
+                            .size(if (badgeCount > 0) 18.dp else 9.dp)
+                            .clip(CircleShape)
+                            .background(Color.Red)
+                            .align(Alignment.TopEnd),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (badgeCount > 0) {
+                            Text(
+                                text = if (badgeCount > 99) "99+" else "$badgeCount",
+                                color = Color.White,
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {

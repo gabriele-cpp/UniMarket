@@ -24,6 +24,7 @@ import com.example.unimarket.data.repository.SupabaseMessageRepository
 import com.example.unimarket.data.repository.SupabaseProductRepository
 import com.example.unimarket.data.repository.SupabaseUserRepository
 import com.example.unimarket.data.repository.UserRepository
+import com.example.unimarket.ui.util.NotificationHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -38,6 +39,7 @@ class UniMarketApplication : Application(), ImageLoaderFactory {
 
     override fun onCreate() {
         super.onCreate()
+        NotificationHelper.initChannel(this)
         val dataContainer = AppDataContainer(this, applicationScope)
         container = dataContainer
         applicationScope.launch {
@@ -128,7 +130,9 @@ class AppDataContainer(
             messageDao = database.messageDao(),
             productDao = database.productDao(),
             userDao = database.userDao(),
-            coroutineScope = scope
+            coroutineScope = scope,
+            context = application,
+            userPreferences = userPreferences
         )
     }
 

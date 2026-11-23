@@ -44,11 +44,19 @@ class UserPreferences(context: Context) {
         prefs.edit().putString(KEY_USER_UUID, uuid).apply()
     }
 
+    fun getLastReadChatTimestamp(): Long =
+        prefs.getLong(KEY_LAST_READ_CHAT, 0L)
+
+    fun setLastReadChatTimestamp(timestamp: Long) {
+        prefs.edit().putLong(KEY_LAST_READ_CHAT, timestamp).apply()
+    }
+
     fun clearSession() {
         prefs.edit()
             .remove(KEY_LOGGED_IN_USER_ID)
             .remove(KEY_ACCESS_TOKEN)
             .remove(KEY_USER_UUID)
+            .remove(KEY_LAST_READ_CHAT)
             .apply()
     }
 
@@ -56,6 +64,7 @@ class UserPreferences(context: Context) {
         private const val KEY_LOGGED_IN_USER_ID = "logged_in_user_id"
         private const val KEY_ACCESS_TOKEN = "access_token"
         private const val KEY_USER_UUID = "user_uuid"
+        private const val KEY_LAST_READ_CHAT = "last_read_chat"
         private const val NO_USER = -1L
 
         private const val LEGACY_IS_LOGGED_IN = "is_logged_in"

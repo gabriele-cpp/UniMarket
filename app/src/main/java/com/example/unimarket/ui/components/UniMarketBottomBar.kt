@@ -1,8 +1,10 @@
 package com.example.unimarket.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AddCircleOutline
 import androidx.compose.material.icons.outlined.Home
@@ -13,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
@@ -26,7 +29,8 @@ fun UniMarketBottomBar(
     onHomeClick: () -> Unit,
     onPostClick: () -> Unit,
     onMenuClick: () -> Unit,
-    currentRoute: String = Routes.HOME
+    currentRoute: String = Routes.HOME,
+    hasUnread: Boolean = false
 ) {
     Surface(
         color = Color.White,
@@ -62,6 +66,7 @@ fun UniMarketBottomBar(
                     icon = Icons.Outlined.Menu,
                     label = "MENU",
                     isActive = currentRoute == Routes.MENU,
+                    showBadge = hasUnread,
                     onClick = onMenuClick
                 )
             }
@@ -75,6 +80,7 @@ private fun BottomBarItem(
     icon: ImageVector,
     label: String,
     isActive: Boolean,
+    showBadge: Boolean = false,
     onClick: () -> Unit
 ) {
     Column(
@@ -84,11 +90,22 @@ private fun BottomBarItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = if (isActive) Color.Black else Color.Gray
-        )
+        Box {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = if (isActive) Color.Black else Color.Gray
+            )
+            if (showBadge) {
+                Box(
+                    modifier = Modifier
+                        .size(9.dp)
+                        .clip(CircleShape)
+                        .background(Color.Red)
+                        .align(Alignment.TopEnd)
+                )
+            }
+        }
         Text(
             text = label,
             fontFamily = FontFamily.Monospace,

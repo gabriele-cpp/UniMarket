@@ -1,14 +1,17 @@
 package com.example.unimarket.data.repository
 
+import android.content.Context
 import com.example.unimarket.data.local.MessageDao
 import com.example.unimarket.data.local.MessageEntity
 import com.example.unimarket.data.local.ProductDao
 import com.example.unimarket.data.local.UserDao
 import com.example.unimarket.data.local.UserEntity
+import com.example.unimarket.data.local.UserPreferences
 import com.example.unimarket.data.model.Conversation
 import com.example.unimarket.data.model.Message
 import com.example.unimarket.data.remote.SupabaseApi
 import com.example.unimarket.data.remote.SupabaseMessageDto
+import com.example.unimarket.ui.util.NotificationHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -21,10 +24,12 @@ class SupabaseMessageRepository(
     private val messageDao: MessageDao,
     private val productDao: ProductDao,
     private val userDao: UserDao,
-    private val coroutineScope: CoroutineScope
+    private val coroutineScope: CoroutineScope,
+    private val context: Context,
+    private val userPreferences: UserPreferences
 ) : MessageRepository {
 
-    private val offlineRepo = OfflineMessageRepository(messageDao, productDao)
+    private val offlineRepo = OfflineMessageRepository(messageDao, productDao, userPreferences)
 
     override fun getMessages(productId: Int, buyerId: Long): Flow<List<Message>> {
         // Ambil pesan terbaru dari Supabase di background
@@ -40,6 +45,13 @@ class SupabaseMessageRepository(
             syncMessages(null)
         }
         return offlineRepo.getConversations(userId)
+    }
+
+    override fun observeUnreadCount(userId: Long): Flow<Int> =
+        offlineRepo.observeUnreadCount(userId)
+
+    override fun markMessagesAsRead() {
+        offlineRepo.markMessagesAsRead()
     }
 
     override suspend fun sendMessage(
@@ -82,6 +94,13 @@ class SupabaseMessageRepository(
         try {
             val filter = if (productId != null) "eq.$productId" else null
             val remoteMessages = supabaseApi.getMessages(filter)
+
+            val currentUserId = userPreferences.getLoggedInUserId()
+            var currentUserEmail: String? = null
+            if (currentUserId != null) {
+                currentUserEmail = userDao.getUserById(currentUserId)?.email
+            }
+
             for (dto in remoteMessages) {
                 val timestamp = parseCreatedAt(dto.created_at)
                 // Cek apakah pesan sudah ada di Room lokal
@@ -106,6 +125,17 @@ class SupabaseMessageRepository(
                             timestamp = timestamp
                         )
                     )
+
+                    // Kirim notifikasi jika pesan baru BUKAN dari user saat ini
+                    if (currentUserEmail != null && dto.sender_email != currentUserEmail) {
+                        NotificationHelper.showChatNotification(
+                            context = context,
+                            senderName = dto.sender_name ?: "Seseorang",
+                            messageText = dto.text,
+                            productId = dto.product_id,
+                            buyerId = localBuyerId
+                        )
+                    }
                 }
             }
         } catch (e: Exception) {

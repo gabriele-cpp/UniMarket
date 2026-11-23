@@ -39,7 +39,7 @@ object AppViewModelProvider {
         }
         initializer {
             val c = container()
-            HomeViewModel(c.productRepository, c.categoryRepository)
+            HomeViewModel(c.productRepository, c.categoryRepository, c.sessionRepository, c.messageRepository)
         }
         initializer {
             val c = container()
@@ -78,7 +78,8 @@ object AppViewModelProvider {
             ProfileViewModel(c.sessionRepository, c.userRepository, c.productRepository)
         }
         initializer {
-            MenuViewModel(container().sessionRepository)
+            val c = container()
+            MenuViewModel(c.sessionRepository, c.messageRepository)
         }
         initializer {
             val c = container()

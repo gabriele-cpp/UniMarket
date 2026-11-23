@@ -87,7 +87,8 @@ fun HomeScreen(
                 onHomeClick = {},
                 onPostClick = onPostClick,
                 onMenuClick = onMenuClick,
-                currentRoute = Routes.HOME
+                currentRoute = Routes.HOME,
+                hasUnread = uiState.hasUnread
             )
         }
     ) { paddingValues ->

@@ -13,6 +13,10 @@ interface MessageRepository {
 
     fun getConversations(userId: Long): Flow<List<Conversation>>
 
+    fun observeUnreadCount(userId: Long): Flow<Int>
+
+    fun markMessagesAsRead()
+
     /**
      * Mengirim pesan. Hanya pembeli percakapan atau penjual barang yang boleh mengirim,
      * dan penjual tidak bisa menjadi "pembeli" untuk barangnya sendiri.
