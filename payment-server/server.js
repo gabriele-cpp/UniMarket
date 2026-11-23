@@ -224,7 +224,7 @@ app.use((err, _req, res, _next) => {
   res.status(status).json(body);
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`payment-server berjalan di http://localhost:${PORT}`);
   console.log(`Dari emulator Android: http://10.0.2.2:${PORT}`);
 });

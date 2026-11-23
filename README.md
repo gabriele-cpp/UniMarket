@@ -55,6 +55,24 @@ npm start           # server berjalan di http://localhost:3000
 
 Cek: `Invoke-RestMethod http://localhost:3000/health` harus mengembalikan `ok: True`. Biarkan jendela ini terbuka selama mengetes aplikasi.
 
+### Menjalankan online dengan Render Free
+
+Repo ini sudah memiliki `render.yaml` di root. Render akan membuat Web Service dari folder `payment-server`, memakai `npm ci` dan `npm start`, lalu memeriksa `/health`. Server otomatis bind ke port Render dan `0.0.0.0`.
+
+1. Push perubahan project ke branch GitHub yang ingin dipakai untuk deploy.
+2. Di Render Dashboard pilih **New → Blueprint**, lalu hubungkan repo UniMarket dan branch tersebut. Pilih `render.yaml` di root repo.
+3. Saat diminta, isi `MIDTRANS_SERVER_KEY` dengan **Server Key Sandbox** (`SB-Mid-server-...`). Jangan memasukkan file `.env` atau commit key ke GitHub.
+4. Tunggu deploy selesai, lalu cek `https://<nama-service>.onrender.com/health`; respons harus `{ "ok": true }`.
+5. Di `local.properties` pada root Android project, tambahkan URL HTTPS dari service Render:
+
+   ```properties
+   PAYMENT_BASE_URL=https://<nama-service>.onrender.com/
+   ```
+
+6. Sync Gradle dan build ulang aplikasi. Emulator maupun HP bisa memakai URL publik ini dari jaringan mana saja.
+
+> **Catatan paket gratis:** service Render Free akan tidur setelah 15 menit tanpa trafik. Request pertama setelah tidur dapat memerlukan sekitar satu menit untuk membangunkan server. Ini cocok untuk demo; jangan gunakan konfigurasi demo ini untuk pembayaran produksi.
+
 ### 2. Mengisi PAYMENT_BASE_URL
 
 Alamat payment-server dibaca dari `local.properties` (tidak di-commit) ke `BuildConfig.PAYMENT_BASE_URL`.
