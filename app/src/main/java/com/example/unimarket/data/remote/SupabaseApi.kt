@@ -84,7 +84,8 @@ interface SupabaseApi {
 
             val authInterceptor = Interceptor { chain ->
                 val request = chain.request()
-                val currentToken = tokenProvider() ?: apiKey
+                val userToken = tokenProvider()
+                val currentToken = if (!userToken.isNullOrBlank()) userToken else apiKey
                 val newRequest = request.newBuilder()
                     .header("apikey", apiKey)
                     .apply {
@@ -93,7 +94,21 @@ interface SupabaseApi {
                         }
                     }
                     .build()
-                chain.proceed(newRequest)
+
+                val response = chain.proceed(newRequest)
+
+                // Jika token JWT user telah kedaluwarsa (HTTP 401) pada REST request,
+                // ulangi otomatis dengan apiKey (anon/publishable key) agar pembacaan katalog tidak terblokir
+                if (response.code == 401 && !userToken.isNullOrBlank() && !request.url.encodedPath.contains("auth/v1/")) {
+                    response.close()
+                    val retryRequest = request.newBuilder()
+                        .header("apikey", apiKey)
+                        .header("Authorization", "Bearer $apiKey")
+                        .build()
+                    return@Interceptor chain.proceed(retryRequest)
+                }
+
+                response
             }
 
             val client = OkHttpClient.Builder()

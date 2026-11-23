@@ -107,7 +107,7 @@ class SupabaseProductRepository(
                 lastSyncTimestamp = System.currentTimeMillis()
             }
         } catch (e: Exception) {
-            // Jika offline atau jaringan lambat, database lokal Room tetap berjalan mulus
+            android.util.Log.e("SupabaseProduct", "Gagal sinkron produk dari Supabase: ${e.message}", e)
         } finally {
             syncMutex.unlock()
         }
