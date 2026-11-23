@@ -31,6 +31,7 @@ data class PostUiState(
     val categories: List<Category> = emptyList(),
     val categoryId: Int? = null,
     val condition: String = ProductDefaults.DEFAULT_CONDITION,
+    val stock: String = "1",
     /** Kosong = memakai ProductDefaults.LOCATION saat disimpan. */
     val location: String = "",
     val allowCod: Boolean = true,
@@ -60,6 +61,17 @@ data class PostUiState(
             !showValidationErrors -> null
             price.isBlank() -> "Harga barang wajib diisi"
             parsedPrice == null -> "Harga harus angka antara 1 dan ${formatRupiah(MAX_PRICE)}"
+            else -> null
+        }
+
+    val parsedStock: Int?
+        get() = stock.toIntOrNull()?.takeIf { it > 0 }
+
+    val stockError: String?
+        get() = when {
+            !showValidationErrors -> null
+            stock.isBlank() -> "Stok barang wajib diisi"
+            parsedStock == null -> "Stok minimal 1"
             else -> null
         }
 
@@ -137,6 +149,7 @@ class PostViewModel(
                         description = product.description,
                         categoryId = product.categoryId,
                         condition = product.condition,
+                        stock = product.stock.toString(),
                         location = product.location,
                         allowCod = product.deliveryMethod.contains("COD", ignoreCase = true),
                         allowGoSend = product.deliveryMethod.contains("GoSend", ignoreCase = true),
@@ -190,11 +203,16 @@ class PostViewModel(
         _uiState.update { it.copy(imageUri = uri) }
     }
 
+    fun onStockChange(stock: String) {
+        _uiState.update { it.copy(stock = stock) }
+    }
+
     fun onPublish() {
         val state = _uiState.value
         if (state.isSaving || state.isLoadingProduct || state.loadFailed) return
         val price = state.parsedPrice
         val categoryId = state.categoryId
+        val stockCount = state.parsedStock ?: 1
         if (!state.isValid || price == null || categoryId == null) {
             _uiState.update { it.copy(showValidationErrors = true) }
             return
@@ -218,7 +236,8 @@ class PostViewModel(
                     description = state.description.trim(),
                     imageUri = state.imageUri,
                     location = state.location.trim().ifEmpty { ProductDefaults.LOCATION },
-                    deliveryMethod = state.deliveryMethodFormatted
+                    deliveryMethod = state.deliveryMethodFormatted,
+                    stock = stockCount
                 )
                 val editingId = state.editingProductId
                 if (editingId == null) {

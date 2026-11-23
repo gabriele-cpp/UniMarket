@@ -14,7 +14,7 @@ interface PaymentRepository {
      * Jika backend gagal, pesanan dihapus lagi agar tidak muncul di riwayat.
      * Sukses = [Order] dengan redirectUrl terisi.
      */
-    suspend fun createOrder(productId: Int, buyerId: Long): PaymentResult<Order>
+    suspend fun createOrder(productId: Int, buyerId: Long, quantity: Int = 1): PaymentResult<Order>
 
     /**
      * Menanyakan status terbaru ke payment-server lalu menyimpannya di Room.

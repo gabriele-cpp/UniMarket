@@ -21,6 +21,7 @@ import kotlinx.coroutines.launch
 
 data class CheckoutUiState(
     val product: Product? = null,
+    val quantity: Int = 1,
     val isLoading: Boolean = true,
     /** true selama meminta halaman pembayaran ke server. */
     val isProcessing: Boolean = false,
@@ -31,6 +32,9 @@ data class CheckoutUiState(
     /** Terisi setelah pesanan berhasil dibuat: UI pindah ke layar pembayaran. */
     val createdOrder: Order? = null
 ) {
+    val totalAmount: Long
+        get() = (product?.price ?: 0L) * quantity
+
     val canPay: Boolean
         get() = product != null && blockReason == null && !isProcessing && createdOrder == null
 }
@@ -73,6 +77,19 @@ class CheckoutViewModel(
         }
     }
 
+    fun incrementQuantity() {
+        _uiState.update { state ->
+            val maxStock = state.product?.stock ?: 1
+            if (state.quantity < maxStock) state.copy(quantity = state.quantity + 1) else state
+        }
+    }
+
+    fun decrementQuantity() {
+        _uiState.update { state ->
+            if (state.quantity > 1) state.copy(quantity = state.quantity - 1) else state
+        }
+    }
+
     fun onPay() {
         if (!_uiState.value.canPay) return
         val userId = sessionRepository.currentUserId.value
@@ -80,11 +97,12 @@ class CheckoutViewModel(
             _uiState.update { it.copy(errorMessage = ErrorMessages.SESSION_EXPIRED) }
             return
         }
+        val currentQuantity = _uiState.value.quantity
         _uiState.update { it.copy(isProcessing = true, errorMessage = null) }
 
         viewModelScope.launch {
             val result = try {
-                paymentRepository.createOrder(productId, userId)
+                paymentRepository.createOrder(productId, userId, currentQuantity)
             } catch (e: Exception) {
                 e.rethrowIfCancellation()
                 PaymentResult.Error(PaymentErrors.UNKNOWN, e)

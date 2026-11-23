@@ -44,7 +44,7 @@ class FakePaymentRepository(
     /** Setiap panggilan createOrder (productId, buyerId), termasuk yang gagal. */
     val createCalls = mutableListOf<Pair<Int, Long>>()
 
-    override suspend fun createOrder(productId: Int, buyerId: Long): PaymentResult<Order> {
+    override suspend fun createOrder(productId: Int, buyerId: Long, quantity: Int): PaymentResult<Order> {
         createCalls += productId to buyerId
         simulateNetwork()?.let { return it }
 
@@ -59,7 +59,8 @@ class FakePaymentRepository(
             productImageUri = product.imageUri,
             sellerName = product.sellerName,
             buyerId = buyerId,
-            amount = product.price,
+            amount = product.price * quantity,
+            quantity = quantity,
             status = OrderStatus.PENDING,
             redirectUrl = "https://app.sandbox.midtrans.com/snap/v4/redirection/token-$orderId",
             createdAt = clock(),

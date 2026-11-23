@@ -58,11 +58,20 @@ fun ProductCard(
                 contentAlignment = Alignment.Center
             ) {
                 if (!product.imageUri.isNullOrEmpty()) {
-                    coil.compose.AsyncImage(
+                    coil.compose.SubcomposeAsyncImage(
                         model = imageModel(product.imageUri),
                         contentDescription = product.title,
                         modifier = Modifier.fillMaxSize(),
-                        contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                        error = {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text(
+                                    text = productMark(product.title),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 17.sp
+                                )
+                            }
+                        }
                     )
                 } else {
                     Text(

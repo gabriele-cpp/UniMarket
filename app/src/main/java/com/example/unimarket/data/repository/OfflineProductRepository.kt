@@ -64,7 +64,8 @@ class OfflineProductRepository(
                 description = input.description,
                 imageUri = newImage,
                 location = input.location,
-                deliveryMethod = input.deliveryMethod
+                deliveryMethod = input.deliveryMethod,
+                stock = input.stock
                 // id, sellerId, status, createdAt tetap
             )
         )

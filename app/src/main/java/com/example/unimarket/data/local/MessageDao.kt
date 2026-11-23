@@ -19,8 +19,11 @@ interface MessageDao {
     )
     fun getMessages(productId: Int, buyerId: Long): Flow<List<MessageEntity>>
 
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(message: MessageEntity): Long
+
+    @Query("SELECT COUNT(*) FROM messages WHERE productId = :productId AND text = :text AND timestamp = :timestamp")
+    suspend fun exists(productId: Int, text: String, timestamp: Long): Int
 
     /**
      * Daftar percakapan di mana [userId] adalah pembeli ATAU penjual barang.

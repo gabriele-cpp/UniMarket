@@ -44,6 +44,7 @@ data class OrderEntity(
     val buyerId: Long,
     /** Harga barang saat pesanan dibuat, dalam Rupiah. */
     val amount: Long,
+    val quantity: Int = 1,
     val status: OrderStatus = OrderStatus.PENDING,
     val redirectUrl: String? = null,
     val createdAt: Long = System.currentTimeMillis()
@@ -64,6 +65,7 @@ data class OrderWithProduct(
         sellerName = product?.seller?.name ?: "Penjual tidak diketahui",
         buyerId = order.buyerId,
         amount = order.amount,
+        quantity = order.quantity,
         status = order.status,
         redirectUrl = order.redirectUrl,
         createdAt = order.createdAt

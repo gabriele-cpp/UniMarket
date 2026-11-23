@@ -82,7 +82,7 @@ class SupabaseProductRepository(
                     val sellerName = dto.seller.trim().ifEmpty { "Penjual" }
                     val sellerId = getOrCreateSellerId(sellerName)
 
-                    val productStatus = if (dto.status?.equals("TERJUAL", ignoreCase = true) == true) {
+                    val productStatus = if (dto.status?.equals("TERJUAL", ignoreCase = true) == true || (dto.stock != null && dto.stock <= 0)) {
                         ProductStatus.TERJUAL
                     } else {
                         ProductStatus.TERSEDIA
@@ -100,6 +100,7 @@ class SupabaseProductRepository(
                         location = dto.location,
                         deliveryMethod = dto.delivery_method,
                         status = productStatus,
+                        stock = dto.stock ?: 1,
                         createdAt = parseCreatedAt(dto.created_at)
                     )
                 }
@@ -167,11 +168,18 @@ class SupabaseProductRepository(
     override suspend fun addProduct(input: ProductInput): Long = withContext(Dispatchers.IO) {
         var remoteImageUrl: String? = null
 
-        // 1. Jika ada gambar, upload ke Supabase Storage (product-images bucket)
+        // 1. Jika ada gambar, salin ke internal storage lalu upload ke Supabase Storage
         val imageUriString = input.imageUri
+        var localStoredPath: String? = null
         if (!imageUriString.isNullOrEmpty()) {
             try {
-                val bytes = readImageBytes(imageUriString)
+                localStoredPath = if (imageUriString.startsWith("content://")) {
+                    imageStorage.importImage(imageUriString)
+                } else {
+                    imageUriString
+                }
+
+                val bytes = readImageBytes(localStoredPath)
                 if (bytes != null) {
                     val fileName = "prod_${UUID.randomUUID()}.jpg"
                     val requestBody = bytes.toRequestBody("image/jpeg".toMediaTypeOrNull())
@@ -211,7 +219,8 @@ class SupabaseProductRepository(
                 description = input.description,
                 location = input.location,
                 delivery_method = input.deliveryMethod,
-                image_uri = remoteImageUrl ?: input.imageUri
+                image_uri = remoteImageUrl, // HANYA kirim remote URL ke Supabase agar valid di multi-device
+                stock = input.stock
             )
             val insertedList = supabaseApi.insertProduct(dto)
             remoteId = insertedList.firstOrNull()?.id
@@ -221,7 +230,7 @@ class SupabaseProductRepository(
         }
 
         // 4. Simpan ke Room lokal
-        val localImage = remoteImageUrl ?: input.imageUri
+        val localImage = remoteImageUrl ?: localStoredPath ?: input.imageUri
         val localEntity = ProductEntity(
             id = remoteId?.toInt() ?: 0,
             title = input.title,
@@ -234,6 +243,7 @@ class SupabaseProductRepository(
             location = input.location,
             deliveryMethod = input.deliveryMethod,
             status = ProductStatus.TERSEDIA,
+            stock = input.stock,
             createdAt = System.currentTimeMillis()
         )
         productDao.upsertProduct(localEntity)
@@ -265,6 +275,27 @@ class SupabaseProductRepository(
 
     override suspend fun refresh() {
         syncWithSupabase(force = true)
+    }
+
+    override suspend fun reduceStock(productId: Int, quantity: Int) {
+        withContext(Dispatchers.IO) {
+            val current = productDao.getProductEntityById(productId) ?: return@withContext
+            val newStock = (current.stock - quantity).coerceAtLeast(0)
+            val newStatus = if (newStock <= 0) ProductStatus.TERJUAL else ProductStatus.TERSEDIA
+
+            productDao.updateStockAndStatus(productId, newStock, newStatus)
+            try {
+                supabaseApi.updateProduct(
+                    idFilter = "eq.$productId",
+                    body = mapOf(
+                        "stock" to newStock,
+                        "status" to newStatus.name
+                    )
+                )
+            } catch (e: Exception) {
+                android.util.Log.e("SupabaseProduct", "Gagal sinkron pengurangan stok ke Supabase: ${e.message}")
+            }
+        }
     }
 
     override suspend fun markProductSold(productId: Int) {

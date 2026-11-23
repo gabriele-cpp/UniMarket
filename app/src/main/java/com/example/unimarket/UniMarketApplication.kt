@@ -20,6 +20,7 @@ import com.example.unimarket.data.repository.OnlinePaymentRepository
 import com.example.unimarket.data.repository.PaymentRepository
 import com.example.unimarket.data.repository.ProductRepository
 import com.example.unimarket.data.repository.SessionRepository
+import com.example.unimarket.data.repository.SupabaseMessageRepository
 import com.example.unimarket.data.repository.SupabaseProductRepository
 import com.example.unimarket.data.repository.SupabaseUserRepository
 import com.example.unimarket.data.repository.UserRepository
@@ -122,7 +123,13 @@ class AppDataContainer(
     }
 
     override val messageRepository: MessageRepository by lazy {
-        OfflineMessageRepository(database.messageDao(), database.productDao())
+        SupabaseMessageRepository(
+            supabaseApi = supabaseApi,
+            messageDao = database.messageDao(),
+            productDao = database.productDao(),
+            userDao = database.userDao(),
+            coroutineScope = scope
+        )
     }
 
     override val paymentRepository: PaymentRepository by lazy {

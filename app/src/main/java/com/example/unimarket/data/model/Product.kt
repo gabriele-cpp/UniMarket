@@ -39,6 +39,7 @@ data class Product(
     val location: String = ProductDefaults.LOCATION,
     val deliveryMethod: String = ProductDefaults.DELIVERY_METHOD,
     val status: ProductStatus = ProductStatus.TERSEDIA,
+    val stock: Int = 1,
     val createdAt: Long = 0L
 )
 
@@ -54,5 +55,6 @@ data class ProductInput(
     val description: String,
     val imageUri: String? = null,
     val location: String = ProductDefaults.LOCATION,
-    val deliveryMethod: String = ProductDefaults.DELIVERY_METHOD
+    val deliveryMethod: String = ProductDefaults.DELIVERY_METHOD,
+    val stock: Int = 1
 )

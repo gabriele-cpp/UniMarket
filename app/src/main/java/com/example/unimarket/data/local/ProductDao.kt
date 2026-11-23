@@ -104,6 +104,12 @@ interface ProductDao {
     suspend fun setStatus(productId: Int, status: ProductStatus): Int
 
     /**
+     * Kurangi stok dan perbarui status jika stok habis.
+     */
+    @Query("UPDATE products SET stock = :newStock, status = :newStatus WHERE id = :productId")
+    suspend fun updateStockAndStatus(productId: Int, newStock: Int, newStatus: ProductStatus): Int
+
+    /**
      * Ubah status hanya jika barang milik [sellerId].
      * @return jumlah baris yang berubah (0 = bukan pemilik / barang tidak ada).
      */

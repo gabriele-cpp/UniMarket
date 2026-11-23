@@ -40,6 +40,7 @@ data class ProductEntity(
     val location: String = ProductDefaults.LOCATION,
     val deliveryMethod: String = ProductDefaults.DELIVERY_METHOD,
     val status: ProductStatus = ProductStatus.TERSEDIA,
+    val stock: Int = 1,
     val createdAt: Long = System.currentTimeMillis()
 )
 
@@ -52,5 +53,6 @@ fun ProductInput.toEntity(): ProductEntity = ProductEntity(
     description = description,
     imageUri = imageUri,
     location = location,
-    deliveryMethod = deliveryMethod
+    deliveryMethod = deliveryMethod,
+    stock = stock
 )

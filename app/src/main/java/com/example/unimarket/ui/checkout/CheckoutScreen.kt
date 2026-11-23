@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +20,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -69,7 +71,13 @@ fun CheckoutRoute(
         }
     }
 
-    CheckoutScreen(uiState = uiState, onBack = onBack, onPay = viewModel::onPay)
+    CheckoutScreen(
+        uiState = uiState,
+        onBack = onBack,
+        onPay = viewModel::onPay,
+        onIncrement = viewModel::incrementQuantity,
+        onDecrement = viewModel::decrementQuantity
+    )
 }
 
 /** Layar Checkout stateless: menerima state + lambda, tanpa ViewModel. */
@@ -77,7 +85,9 @@ fun CheckoutRoute(
 fun CheckoutScreen(
     uiState: CheckoutUiState,
     onBack: () -> Unit,
-    onPay: () -> Unit
+    onPay: () -> Unit,
+    onIncrement: () -> Unit = {},
+    onDecrement: () -> Unit = {}
 ) {
     val product = uiState.product
     Scaffold(
@@ -85,7 +95,7 @@ fun CheckoutScreen(
         bottomBar = {
             if (product != null) {
                 PayBar(
-                    total = product.price,
+                    total = uiState.totalAmount,
                     enabled = uiState.canPay,
                     isProcessing = uiState.isProcessing,
                     onPay = onPay
@@ -118,16 +128,58 @@ fun CheckoutScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 ProductSummary(product)
 
+                Spacer(modifier = Modifier.height(20.dp))
+                Caption("JUMLAH PEMBELIAN")
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Stok: ${product.stock} barang",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = onDecrement,
+                            enabled = uiState.quantity > 1,
+                            modifier = Modifier.size(36.dp),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text("-", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Text(
+                            text = "${uiState.quantity}",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                        OutlinedButton(
+                            onClick = onIncrement,
+                            enabled = uiState.quantity < product.stock,
+                            modifier = Modifier.size(36.dp),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text("+", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
                 SellerCard(name = product.sellerName)
 
                 Spacer(modifier = Modifier.height(24.dp))
                 Caption("RINCIAN PEMBAYARAN")
                 Spacer(modifier = Modifier.height(8.dp))
-                PriceRow(label = "Harga barang", value = formatRupiah(product.price))
+                PriceRow(label = "Harga satuan", value = formatRupiah(product.price))
+                PriceRow(label = "Jumlah", value = "${uiState.quantity}x")
                 PriceRow(label = "Biaya layanan", value = formatRupiah(0))
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), thickness = 2.dp, color = Color.Black)
-                PriceRow(label = "Total", value = formatRupiah(product.price), bold = true)
+                PriceRow(label = "Total", value = formatRupiah(uiState.totalAmount), bold = true)
 
                 uiState.blockReason?.let { Notice(text = it, isError = true) }
                 uiState.errorMessage?.let { Notice(text = it, isError = true) }

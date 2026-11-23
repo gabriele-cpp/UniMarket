@@ -74,6 +74,17 @@ interface SupabaseApi {
         @Header("x-upsert") upsert: String = "true"
     ): SupabaseStorageUploadResponse
 
+    @GET("rest/v1/messages?order=created_at.asc")
+    suspend fun getMessages(
+        @Query("product_id") productIdFilter: String? = null
+    ): List<SupabaseMessageDto>
+
+    @POST("rest/v1/messages")
+    suspend fun insertMessage(
+        @Body message: SupabaseMessageDto,
+        @Header("Prefer") prefer: String = "return=representation"
+    ): List<SupabaseMessageDto>
+
     companion object {
         fun create(
             baseUrl: String,
@@ -188,10 +199,22 @@ data class SupabaseProductDto(
     val mark: String = "UM",
     val color_hex: String = "#D7E7F5",
     val status: String? = "TERSEDIA",
+    val stock: Int? = 1,
     val created_at: String? = null
 )
 
 data class SupabaseStorageUploadResponse(
     val Key: String?,
     val Id: String?
+)
+
+data class SupabaseMessageDto(
+    val id: Long? = null,
+    val product_id: Int,
+    val buyer_email: String,
+    val sender_email: String,
+    val buyer_name: String? = null,
+    val sender_name: String? = null,
+    val text: String,
+    val created_at: String? = null
 )

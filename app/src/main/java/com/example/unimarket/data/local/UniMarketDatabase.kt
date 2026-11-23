@@ -14,8 +14,8 @@ import androidx.room.TypeConverters
         MessageEntity::class,
         OrderEntity::class
     ],
-    // v6: tabel orders (pembayaran Midtrans)
-    version = 6,
+    // v7: stok produk dan kuantitas order
+    version = 7,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

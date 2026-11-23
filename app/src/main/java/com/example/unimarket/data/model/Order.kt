@@ -28,6 +28,7 @@ data class Order(
     val buyerId: Long,
     /** Harga saat pesanan dibuat, dalam Rupiah. */
     val amount: Long,
+    val quantity: Int = 1,
     val status: OrderStatus,
     /** Halaman pembayaran Midtrans Snap. null jika backend belum memberikan. */
     val redirectUrl: String?,
@@ -72,7 +73,7 @@ object PurchaseRules {
      */
     fun blockReason(product: Product, buyerId: Long): String? = when {
         product.sellerId == buyerId -> OWN_PRODUCT
-        product.status != ProductStatus.TERSEDIA -> NOT_AVAILABLE
+        product.status != ProductStatus.TERSEDIA || product.stock <= 0 -> NOT_AVAILABLE
         else -> null
     }
 

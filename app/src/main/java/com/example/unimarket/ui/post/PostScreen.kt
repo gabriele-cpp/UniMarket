@@ -188,6 +188,17 @@ fun PostScreen(
                     supportingText = uiState.priceError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } }
                 )
 
+                OutlinedTextField(
+                    value = uiState.stock,
+                    onValueChange = { viewModel.onStockChange(it.filter { ch -> ch.isDigit() }) },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    label = { Text("Jumlah Stok") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    isError = uiState.stockError != null,
+                    supportingText = uiState.stockError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } }
+                )
+
                 Spacer(modifier = Modifier.height(17.dp))
                 Caption("KATEGORI")
                 Spacer(modifier = Modifier.height(7.dp))

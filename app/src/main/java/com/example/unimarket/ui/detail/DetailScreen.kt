@@ -199,11 +199,21 @@ fun DetailScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     if (!product.imageUri.isNullOrEmpty()) {
-                        coil.compose.AsyncImage(
+                        coil.compose.SubcomposeAsyncImage(
                             model = imageModel(product.imageUri),
                             contentDescription = product.title,
                             modifier = Modifier.fillMaxSize(),
-                            contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                            contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                            error = {
+                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    Text(
+                                        text = productMark(product.title),
+                                        color = Color.Black,
+                                        fontSize = 54.sp,
+                                        fontWeight = FontWeight.Black
+                                    )
+                                }
+                            }
                         )
                     } else {
                         Text(
@@ -245,6 +255,20 @@ fun DetailScreen(
                         Text(
                             text = product.status.label,
                             color = statusText,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (product.stock > 0) Color(0xFFE8F5E9) else Color(0xFFFFEBEE))
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = if (product.stock > 0) "Stok: ${product.stock}" else "Stok Habis",
+                            color = if (product.stock > 0) Color(0xFF2E7D32) else Color(0xFFC62828),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )

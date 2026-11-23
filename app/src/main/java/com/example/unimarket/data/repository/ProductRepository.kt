@@ -53,6 +53,9 @@ interface ProductRepository {
 
     /** Menandai barang telah laku terjual (dipanggil saat pembayaran lunas). */
     suspend fun markProductSold(productId: Int): Unit = Unit
+
+    /** Mengurangi stok barang setelah pembelian, otomatis mengubah status menjadi TERJUAL jika stok habis. */
+    suspend fun reduceStock(productId: Int, quantity: Int): Unit = Unit
 }
 
 /** Hasil operasi yang hanya boleh dilakukan pemilik barang. */

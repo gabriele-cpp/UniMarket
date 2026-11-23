@@ -29,20 +29,28 @@ class OnlinePaymentRepository(
     private val clock: () -> Long = System::currentTimeMillis
 ) : PaymentRepository {
 
-    override suspend fun createOrder(productId: Int, buyerId: Long): PaymentResult<Order> {
+    override suspend fun createOrder(productId: Int, buyerId: Long, quantity: Int): PaymentResult<Order> {
         val product = productDao.getProductById(productId)?.toProduct()
             ?: return PaymentResult.Error(PaymentErrors.PRODUCT_NOT_FOUND)
         PurchaseRules.blockReason(product, buyerId)?.let { return PaymentResult.Error(it) }
 
+        if (product.stock < quantity) {
+            return PaymentResult.Error("Jumlah melebihi stok yang tersedia (${product.stock})")
+        }
+
         val buyer = userDao.getUserById(buyerId)
         val now = clock()
         val orderId = generateOrderId(productId, now)
+        val totalAmount = product.price * quantity
+        val itemTitle = if (quantity > 1) "${product.title} ($quantity pcs)" else product.title
+
         orderDao.insert(
             OrderEntity(
                 orderId = orderId,
                 productId = productId,
                 buyerId = buyerId,
-                amount = product.price,
+                amount = totalAmount,
+                quantity = quantity,
                 status = OrderStatus.PENDING,
                 createdAt = now
             )
@@ -52,8 +60,8 @@ class OnlinePaymentRepository(
             api.createPayment(
                 CreatePaymentRequest(
                     orderId = orderId,
-                    amount = product.price,
-                    itemName = product.title,
+                    amount = totalAmount,
+                    itemName = itemTitle,
                     customerName = buyer?.name,
                     customerEmail = buyer?.email
                 )
@@ -91,7 +99,7 @@ class OnlinePaymentRepository(
             order.status -> Unit
             OrderStatus.PAID -> {
                 orderDao.markPaid(orderId, order.productId)
-                productRepository?.markProductSold(order.productId)
+                productRepository?.reduceStock(order.productId, order.quantity)
             }
             else -> orderDao.updateStatus(orderId, newStatus)
         }

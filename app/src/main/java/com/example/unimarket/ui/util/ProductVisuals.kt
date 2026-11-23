@@ -1,5 +1,6 @@
 package com.example.unimarket.ui.util
 
+import android.net.Uri
 import androidx.compose.ui.graphics.Color
 import java.io.File
 
@@ -37,5 +38,6 @@ fun productMark(title: String): String {
 fun imageModel(imageUri: String?): Any? = when {
     imageUri.isNullOrBlank() -> null
     imageUri.startsWith("/") -> File(imageUri)
+    imageUri.startsWith("content://") -> Uri.parse(imageUri)
     else -> imageUri
 }

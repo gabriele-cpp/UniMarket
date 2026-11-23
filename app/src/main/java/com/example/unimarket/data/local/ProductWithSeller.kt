@@ -30,6 +30,7 @@ data class ProductWithSeller(
         location = product.location,
         deliveryMethod = product.deliveryMethod,
         status = product.status,
+        stock = product.stock,
         createdAt = product.createdAt
     )
 }
