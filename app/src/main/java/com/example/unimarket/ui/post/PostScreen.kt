@@ -25,6 +25,7 @@ import com.example.unimarket.data.model.ProductDefaults
 import com.example.unimarket.ui.components.CategoryGrid
 import com.example.unimarket.ui.components.Caption
 import com.example.unimarket.ui.util.imageModel
+import com.example.unimarket.ui.util.keepAboveKeyboard
 import com.example.unimarket.ui.components.UniMarketTopBar
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -111,6 +112,11 @@ fun PostScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                // Edge-to-edge: layar tidak menyusut sendiri saat keyboard muncul. imePadding
+                // memperkecil area form sehingga kolom yang sedang diketik (mis. Deskripsi)
+                // otomatis digulir ke atas keyboard. consumeWindowInsets mencegah padding ganda.
+                .consumeWindowInsets(paddingValues)
+                .imePadding()
                 .padding(horizontal = 20.dp),
             contentPadding = PaddingValues(bottom = 24.dp)
         ) {
@@ -167,7 +173,7 @@ fun PostScreen(
                 OutlinedTextField(
                     value = uiState.title,
                     onValueChange = { viewModel.onTitleChange(it) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().keepAboveKeyboard(),
                     label = { Text("Judul barang") },
                     singleLine = true,
                     isError = uiState.titleError != null,
@@ -179,7 +185,7 @@ fun PostScreen(
                 OutlinedTextField(
                     value = uiState.price,
                     onValueChange = { viewModel.onPriceChange(it) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().keepAboveKeyboard(),
                     label = { Text("Harga") },
                     prefix = { Text("Rp ") },
                     singleLine = true,
@@ -191,7 +197,7 @@ fun PostScreen(
                 OutlinedTextField(
                     value = uiState.stock,
                     onValueChange = { viewModel.onStockChange(it.filter { ch -> ch.isDigit() }) },
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    modifier = Modifier.fillMaxWidth().keepAboveKeyboard().padding(top = 8.dp),
                     label = { Text("Jumlah Stok") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -238,7 +244,7 @@ fun PostScreen(
                 OutlinedTextField(
                     value = uiState.location,
                     onValueChange = { viewModel.onLocationChange(it) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().keepAboveKeyboard(),
                     label = { Text("Titik Temu COD Kampus") },
                     placeholder = { Text("Misal: Perpustakaan Utama, Kantin Gedung C") },
                     singleLine = true
@@ -279,7 +285,7 @@ fun PostScreen(
                 OutlinedTextField(
                     value = uiState.description,
                     onValueChange = { viewModel.onDescriptionChange(it) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().keepAboveKeyboard(),
                     label = { Text("Deskripsi") },
                     placeholder = { Text("Ceritakan kondisi dan detail barang") },
                     minLines = 3

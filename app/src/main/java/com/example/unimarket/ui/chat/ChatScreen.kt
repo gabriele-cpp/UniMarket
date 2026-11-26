@@ -12,6 +12,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.unimarket.ui.AppViewModelProvider
 import com.example.unimarket.ui.components.ChatBubble
@@ -27,6 +30,15 @@ fun ChatScreen(
     val uiState by viewModel.uiState.collectAsState()
     val inputState by viewModel.inputState.collectAsState()
     val listState = rememberLazyListState()
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    // Realtime hanya selama layar terlihat (STARTED): putus saat keluar chat / app di background,
+    // tersambung lagi saat kembali. Menghemat kuota Realtime Supabase.
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewModel.listenForNewMessages()
+        }
+    }
 
     // Gulir otomatis ke pesan terbaru.
     LaunchedEffect(uiState.messages.size) {

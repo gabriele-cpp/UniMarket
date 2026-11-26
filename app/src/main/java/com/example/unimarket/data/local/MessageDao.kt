@@ -26,6 +26,33 @@ interface MessageDao {
     suspend fun exists(productId: Int, text: String, timestamp: Long): Int
 
     /**
+     * Mencari salinan lokal dari pesan yang dikirim dari perangkat ini. Salinan itu disimpan
+     * dengan jam HP, sedangkan versi Supabase memakai jam server, jadi dicocokkan dengan
+     * rentang waktu [from]..[to] dan diambil yang paling dekat dengan [around].
+     */
+    @Query(
+        """
+        SELECT * FROM messages
+        WHERE productId = :productId AND buyerId = :buyerId AND senderId = :senderId
+          AND text = :text AND timestamp BETWEEN :from AND :to
+        ORDER BY ABS(timestamp - :around) ASC
+        LIMIT 1
+        """
+    )
+    suspend fun findLocalCopy(
+        productId: Int,
+        buyerId: Long,
+        senderId: Long,
+        text: String,
+        from: Long,
+        to: Long,
+        around: Long
+    ): MessageEntity?
+
+    @Query("UPDATE messages SET timestamp = :timestamp WHERE id = :id")
+    suspend fun updateTimestamp(id: Long, timestamp: Long)
+
+    /**
      * Daftar percakapan di mana [userId] adalah pembeli ATAU penjual barang.
      * Satu baris per percakapan (productId + buyerId), memakai pesan terakhirnya.
      * "Lawan bicara" = penjual jika user adalah pembeli, dan sebaliknya.

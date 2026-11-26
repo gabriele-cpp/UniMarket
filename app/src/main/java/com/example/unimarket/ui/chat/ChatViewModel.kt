@@ -82,6 +82,17 @@ class ChatViewModel(
     private val _inputState = MutableStateFlow(ChatInputState())
     val inputState: StateFlow<ChatInputState> = _inputState.asStateFlow()
 
+    /**
+     * Mendengarkan pesan baru secara realtime. Dipanggil oleh layar hanya selama layar
+     * terlihat (lihat ChatScreen), sehingga koneksi ke Supabase tertutup saat user keluar
+     * dari chat atau aplikasi masuk background.
+     */
+    suspend fun listenForNewMessages() {
+        messageRepository.realtimeUpdates(productId)
+            .catch { e -> ErrorMessages.log(e) }
+            .collect { }
+    }
+
     fun onDraftChange(value: String) {
         _inputState.update { it.copy(draft = value.take(ChatErrors.MAX_LENGTH), error = null) }
     }

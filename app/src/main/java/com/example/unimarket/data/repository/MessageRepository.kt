@@ -3,6 +3,7 @@ package com.example.unimarket.data.repository
 import com.example.unimarket.data.model.Conversation
 import com.example.unimarket.data.model.Message
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 
 /**
  * Chat antara pembeli dan penjual (simulasi lokal di satu perangkat).
@@ -16,6 +17,14 @@ interface MessageRepository {
     fun observeUnreadCount(userId: Long): Flow<Int>
 
     fun markMessagesAsRead()
+
+    /**
+     * Mendengarkan pesan baru untuk barang [productId] secara realtime dan menyimpannya ke
+     * database lokal (UI ikut ter-update lewat [getMessages]). Hanya aktif selama Flow
+     * dikumpulkan, jadi koneksi cukup dibuka saat layar chat terlihat.
+     * Implementasi lokal tidak punya server, jadi bawaannya tidak melakukan apa-apa.
+     */
+    fun realtimeUpdates(productId: Int): Flow<Unit> = emptyFlow()
 
     /**
      * Mengirim pesan. Hanya pembeli percakapan atau penjual barang yang boleh mengirim,

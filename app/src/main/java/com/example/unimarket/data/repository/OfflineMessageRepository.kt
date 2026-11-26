@@ -45,21 +45,37 @@ class OfflineMessageRepository(
         buyerId: Long,
         senderId: Long,
         text: String
-    ): SendMessageResult {
+    ): SendMessageResult = when (val result = insertLocalMessage(productId, buyerId, senderId, text)) {
+        is LocalInsertResult.Saved -> SendMessageResult.Success
+        is LocalInsertResult.Rejected -> SendMessageResult.Error(result.message)
+    }
+
+    /** Validasi lalu simpan pesan di Room. Mengembalikan id baris lokal jika berhasil. */
+    suspend fun insertLocalMessage(
+        productId: Int,
+        buyerId: Long,
+        senderId: Long,
+        text: String
+    ): LocalInsertResult {
         val trimmed = text.trim()
-        if (trimmed.isEmpty()) return SendMessageResult.Error(ChatErrors.EMPTY)
-        if (trimmed.length > ChatErrors.MAX_LENGTH) return SendMessageResult.Error(ChatErrors.TOO_LONG)
+        if (trimmed.isEmpty()) return LocalInsertResult.Rejected(ChatErrors.EMPTY)
+        if (trimmed.length > ChatErrors.MAX_LENGTH) return LocalInsertResult.Rejected(ChatErrors.TOO_LONG)
 
         val product = productDao.getProductEntityById(productId)
-            ?: return SendMessageResult.Error(ChatErrors.PRODUCT_NOT_FOUND)
-        if (buyerId == product.sellerId) return SendMessageResult.Error(ChatErrors.OWN_PRODUCT)
+            ?: return LocalInsertResult.Rejected(ChatErrors.PRODUCT_NOT_FOUND)
+        if (buyerId == product.sellerId) return LocalInsertResult.Rejected(ChatErrors.OWN_PRODUCT)
         if (senderId != buyerId && senderId != product.sellerId) {
-            return SendMessageResult.Error(ChatErrors.NOT_PARTICIPANT)
+            return LocalInsertResult.Rejected(ChatErrors.NOT_PARTICIPANT)
         }
 
-        messageDao.insert(
+        val id = messageDao.insert(
             MessageEntity(productId = productId, buyerId = buyerId, senderId = senderId, text = trimmed)
         )
-        return SendMessageResult.Success
+        return LocalInsertResult.Saved(id, trimmed)
     }
+}
+
+sealed class LocalInsertResult {
+    data class Saved(val localId: Long, val text: String) : LocalInsertResult()
+    data class Rejected(val message: String) : LocalInsertResult()
 }

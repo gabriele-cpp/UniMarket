@@ -11,6 +11,7 @@ import com.example.unimarket.data.local.UniMarketDatabase
 import com.example.unimarket.data.local.UserPreferences
 import com.example.unimarket.data.remote.PaymentApi
 import com.example.unimarket.data.remote.SupabaseApi
+import com.example.unimarket.data.remote.SupabaseRealtime
 import com.example.unimarket.data.repository.CategoryRepository
 import com.example.unimarket.data.repository.DefaultSessionRepository
 import com.example.unimarket.data.repository.MessageRepository
@@ -132,7 +133,11 @@ class AppDataContainer(
             userDao = database.userDao(),
             coroutineScope = scope,
             context = application,
-            userPreferences = userPreferences
+            userPreferences = userPreferences,
+            realtime = SupabaseRealtime(
+                baseUrl = BuildConfig.SUPABASE_URL,
+                apiKey = BuildConfig.SUPABASE_KEY
+            )
         )
     }
 
