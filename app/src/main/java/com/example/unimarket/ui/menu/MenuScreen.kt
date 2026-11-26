@@ -31,8 +31,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.unimarket.ui.AppViewModelProvider
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.unimarket.ui.components.Caption
 import com.example.unimarket.ui.navigation.Routes
 import com.example.unimarket.ui.theme.AppColors
@@ -42,7 +41,7 @@ fun MenuScreen(
     onNavigate: (String) -> Unit,
     onBack: () -> Unit,
     onSignedOut: () -> Unit,
-    viewModel: MenuViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: MenuViewModel = hiltViewModel()
 ) {
     val userInitials by viewModel.userInitials.collectAsState()
     val unreadCount by viewModel.unreadCount.collectAsState()

@@ -1,5 +1,8 @@
 package com.example.unimarket.ui.register
 
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.unimarket.data.repository.AuthErrors
@@ -32,7 +35,8 @@ data class RegisterUiState(
     val isRegistered: Boolean = false
 )
 
-class RegisterViewModel(
+@HiltViewModel
+class RegisterViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val sessionRepository: SessionRepository
 ) : ViewModel() {

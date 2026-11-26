@@ -19,8 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.unimarket.ui.AppViewModelProvider
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.unimarket.data.model.ProductDefaults
 import com.example.unimarket.ui.components.CategoryGrid
 import com.example.unimarket.ui.components.Caption
@@ -36,7 +35,7 @@ import coil.compose.AsyncImage
 fun PostScreen(
     onBack: () -> Unit,
     onPostSuccess: () -> Unit,
-    viewModel: PostViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: PostViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 

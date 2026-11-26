@@ -15,8 +15,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.unimarket.ui.AppViewModelProvider
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.unimarket.ui.components.ChatBubble
 import com.example.unimarket.ui.components.EmptyState
 import com.example.unimarket.ui.components.UniMarketTopBar
@@ -25,7 +24,7 @@ import com.example.unimarket.ui.util.formatTime
 @Composable
 fun ChatScreen(
     onBack: () -> Unit,
-    viewModel: ChatViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: ChatViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val inputState by viewModel.inputState.collectAsState()

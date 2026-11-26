@@ -1,5 +1,8 @@
 package com.example.unimarket.ui.myitems
 
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.unimarket.data.model.Product
@@ -36,7 +39,8 @@ data class MyItemsDialogState(
     val message: String? = null
 )
 
-class MyItemsViewModel(
+@HiltViewModel
+class MyItemsViewModel @Inject constructor(
     private val productRepository: ProductRepository,
     private val sessionRepository: SessionRepository
 ) : ViewModel() {

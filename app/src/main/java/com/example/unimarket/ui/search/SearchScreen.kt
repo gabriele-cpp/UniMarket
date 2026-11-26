@@ -12,9 +12,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.unimarket.data.model.ProductSort
-import com.example.unimarket.ui.AppViewModelProvider
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.unimarket.ui.components.*
 import com.example.unimarket.ui.util.ALL_CATEGORIES_LABEL
 
@@ -22,7 +21,7 @@ import com.example.unimarket.ui.util.ALL_CATEGORIES_LABEL
 fun SearchScreen(
     onBack: () -> Unit,
     onProductClick: (Int) -> Unit,
-    viewModel: SearchViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: SearchViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val query by viewModel.query.collectAsState()

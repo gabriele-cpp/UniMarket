@@ -19,9 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.unimarket.data.model.Conversation
-import com.example.unimarket.ui.AppViewModelProvider
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.unimarket.ui.components.EmptyState
 import com.example.unimarket.ui.components.UniMarketTopBar
 import com.example.unimarket.ui.theme.AppColors
@@ -32,7 +31,7 @@ import com.example.unimarket.ui.util.initials
 fun ChatListScreen(
     onBack: () -> Unit,
     onConversationClick: (productId: Int, buyerId: Long) -> Unit,
-    viewModel: ChatListViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: ChatListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 

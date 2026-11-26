@@ -1,5 +1,8 @@
 package com.example.unimarket.ui.menu
 
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.unimarket.data.repository.MessageRepository
@@ -15,7 +18,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-class MenuViewModel(
+@HiltViewModel
+class MenuViewModel @Inject constructor(
     private val sessionRepository: SessionRepository,
     private val messageRepository: MessageRepository
 ) : ViewModel() {

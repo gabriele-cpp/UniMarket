@@ -19,8 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.unimarket.ui.AppViewModelProvider
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.unimarket.ui.components.UniMarketTopBar
 import com.example.unimarket.ui.theme.AppColors
 import com.example.unimarket.ui.util.initials
@@ -31,7 +30,7 @@ fun ProfileScreen(
     onBack: () -> Unit,
     onSignedOut: () -> Unit,
     onMyItemsClick: () -> Unit,
-    viewModel: ProfileViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val editState by viewModel.editState.collectAsState()

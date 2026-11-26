@@ -55,11 +55,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.unimarket.data.model.Order
 import com.example.unimarket.data.model.OrderStatus
 import com.example.unimarket.data.model.isPaymentFinishUrl
-import com.example.unimarket.ui.AppViewModelProvider
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.unimarket.ui.components.EmptyState
 import com.example.unimarket.ui.components.OrderStatusBadge
 import com.example.unimarket.ui.components.UniMarketTopBar
@@ -72,7 +71,7 @@ fun PaymentScreen(
     onBack: () -> Unit,
     onOpenOrders: () -> Unit,
     onGoHome: () -> Unit,
-    viewModel: PaymentViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: PaymentViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }

@@ -1,5 +1,8 @@
 package com.example.unimarket.ui.search
 
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.unimarket.data.model.Category
@@ -40,7 +43,8 @@ private data class SearchParams(val query: String, val categoryId: Int?, val sor
 /** Hasil pencarian atau error, agar error tidak menghentikan seluruh layar. */
 private data class SearchResults(val products: List<Product> = emptyList(), val error: String? = null)
 
-class SearchViewModel(
+@HiltViewModel
+class SearchViewModel @Inject constructor(
     private val productRepository: ProductRepository,
     categoryRepository: CategoryRepository
 ) : ViewModel() {

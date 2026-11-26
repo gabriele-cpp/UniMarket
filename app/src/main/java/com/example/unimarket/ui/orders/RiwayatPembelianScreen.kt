@@ -26,9 +26,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.unimarket.data.model.Order
-import com.example.unimarket.ui.AppViewModelProvider
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.unimarket.ui.components.EmptyState
 import com.example.unimarket.ui.components.OrderStatusBadge
 import com.example.unimarket.ui.components.Section
@@ -40,7 +39,7 @@ import com.example.unimarket.ui.util.formatRupiah
 fun RiwayatPembelianScreen(
     onBack: () -> Unit,
     onOrderClick: (orderId: String) -> Unit,
-    viewModel: RiwayatPembelianViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: RiwayatPembelianViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 

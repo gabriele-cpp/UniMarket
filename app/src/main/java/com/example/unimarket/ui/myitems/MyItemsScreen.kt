@@ -19,10 +19,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.unimarket.data.model.Product
 import com.example.unimarket.data.model.ProductStatus
-import com.example.unimarket.ui.AppViewModelProvider
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.unimarket.ui.components.EmptyState
 import com.example.unimarket.ui.components.ProductCard
 import com.example.unimarket.ui.components.Section
@@ -39,7 +38,7 @@ fun MyItemsRoute(
     onProductClick: (Int) -> Unit,
     onEditClick: (Int) -> Unit,
     onPostClick: () -> Unit,
-    viewModel: MyItemsViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: MyItemsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val dialogState by viewModel.dialogState.collectAsState()

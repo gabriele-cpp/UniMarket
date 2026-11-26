@@ -1,5 +1,8 @@
 package com.example.unimarket.ui.chat
 
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.unimarket.data.model.Conversation
@@ -22,7 +25,8 @@ data class ChatListUiState(
     val errorMessage: String? = null
 )
 
-class ChatListViewModel(
+@HiltViewModel
+class ChatListViewModel @Inject constructor(
     private val messageRepository: MessageRepository,
     sessionRepository: SessionRepository
 ) : ViewModel() {

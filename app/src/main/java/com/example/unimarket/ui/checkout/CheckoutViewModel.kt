@@ -1,5 +1,8 @@
 package com.example.unimarket.ui.checkout
 
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -39,7 +42,8 @@ data class CheckoutUiState(
         get() = product != null && blockReason == null && !isProcessing && createdOrder == null
 }
 
-class CheckoutViewModel(
+@HiltViewModel
+class CheckoutViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val productRepository: ProductRepository,
     private val sessionRepository: SessionRepository,

@@ -16,8 +16,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.unimarket.ui.AppViewModelProvider
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.unimarket.ui.components.Brand
 import com.example.unimarket.ui.components.Caption
 
@@ -29,7 +28,7 @@ import com.example.unimarket.ui.components.Caption
 fun LoginRoute(
     onLoginSuccess: () -> Unit,
     onRegisterClick: () -> Unit,
-    viewModel: LoginViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 

@@ -1,5 +1,8 @@
 package com.example.unimarket.ui.payment
 
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -34,7 +37,8 @@ data class PaymentUiState(
         get() = order?.status == OrderStatus.PENDING && !order.redirectUrl.isNullOrBlank()
 }
 
-class PaymentViewModel(
+@HiltViewModel
+class PaymentViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val paymentRepository: PaymentRepository
 ) : ViewModel() {

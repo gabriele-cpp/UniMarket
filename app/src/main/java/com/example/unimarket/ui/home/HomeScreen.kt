@@ -18,9 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.unimarket.data.model.Category
-import com.example.unimarket.ui.AppViewModelProvider
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.unimarket.ui.components.*
 import com.example.unimarket.ui.navigation.Routes
 import com.example.unimarket.ui.util.ALL_CATEGORIES_LABEL
@@ -74,7 +73,7 @@ fun HomeScreen(
     onPostClick: () -> Unit,
     onMenuClick: () -> Unit,
     onProfileClick: () -> Unit,
-    viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 

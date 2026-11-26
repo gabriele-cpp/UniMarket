@@ -17,8 +17,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.unimarket.ui.AppViewModelProvider
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.unimarket.ui.components.Brand
 import com.example.unimarket.ui.components.Caption
 
@@ -26,7 +25,7 @@ import com.example.unimarket.ui.components.Caption
 fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
     onLoginClick: () -> Unit,
-    viewModel: RegisterViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: RegisterViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 

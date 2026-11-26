@@ -1,5 +1,8 @@
 package com.example.unimarket.ui.navigation
 
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.unimarket.data.repository.SessionRepository
@@ -14,7 +17,8 @@ import com.example.unimarket.ui.util.rethrowIfCancellation
 /**
  * Menentukan layar awal aplikasi berdasarkan sesi login.
  */
-class SessionViewModel(
+@HiltViewModel
+class SessionViewModel @Inject constructor(
     private val sessionRepository: SessionRepository,
     private val userRepository: UserRepository
 ) : ViewModel() {

@@ -8,14 +8,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.unimarket.ui.AppViewModelProvider
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.unimarket.ui.chat.ChatListScreen
 import com.example.unimarket.ui.chat.ChatScreen
 import com.example.unimarket.ui.chat.ChatViewModel
@@ -37,7 +36,7 @@ import com.example.unimarket.ui.search.SearchScreen
 
 @Composable
 fun AppNavigation(
-    sessionViewModel: SessionViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    sessionViewModel: SessionViewModel = hiltViewModel()
 ) {
     val startDestination by sessionViewModel.startDestination.collectAsState()
 

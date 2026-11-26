@@ -1,5 +1,8 @@
 package com.example.unimarket.ui.post
 
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -93,7 +96,8 @@ data class PostUiState(
         }
 }
 
-class PostViewModel(
+@HiltViewModel
+class PostViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val productRepository: ProductRepository,
     categoryRepository: CategoryRepository,

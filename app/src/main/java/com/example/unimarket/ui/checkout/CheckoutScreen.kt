@@ -38,10 +38,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.unimarket.data.model.Product
-import com.example.unimarket.ui.AppViewModelProvider
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.unimarket.ui.components.Caption
 import com.example.unimarket.ui.components.EmptyState
 import com.example.unimarket.ui.components.SellerCard
@@ -60,7 +59,7 @@ import com.example.unimarket.ui.util.productMark
 fun CheckoutRoute(
     onBack: () -> Unit,
     onOpenPayment: (orderId: String) -> Unit,
-    viewModel: CheckoutViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: CheckoutViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 

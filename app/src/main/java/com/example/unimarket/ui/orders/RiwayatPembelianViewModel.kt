@@ -1,5 +1,8 @@
 package com.example.unimarket.ui.orders
 
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.unimarket.data.model.Order
@@ -21,7 +24,8 @@ data class RiwayatPembelianUiState(
     val errorMessage: String? = null
 )
 
-class RiwayatPembelianViewModel(
+@HiltViewModel
+class RiwayatPembelianViewModel @Inject constructor(
     paymentRepository: PaymentRepository,
     sessionRepository: SessionRepository
 ) : ViewModel() {

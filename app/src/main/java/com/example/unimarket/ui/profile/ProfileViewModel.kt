@@ -1,5 +1,8 @@
 package com.example.unimarket.ui.profile
 
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.unimarket.data.local.UserEntity
@@ -43,7 +46,8 @@ data class EditProfileState(
     val saveError: String? = null
 )
 
-class ProfileViewModel(
+@HiltViewModel
+class ProfileViewModel @Inject constructor(
     private val sessionRepository: SessionRepository,
     private val userRepository: UserRepository,
     productRepository: ProductRepository

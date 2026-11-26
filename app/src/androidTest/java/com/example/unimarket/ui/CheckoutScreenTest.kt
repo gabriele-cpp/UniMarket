@@ -7,6 +7,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.unimarket.data.model.Product
 import com.example.unimarket.data.model.PurchaseRules
@@ -67,7 +68,7 @@ class CheckoutScreenTest {
 
         composeRule.onNodeWithText("Kalkulator Casio fx-991").assertIsDisplayed()
         composeRule.onNodeWithText("Budi Santoso").assertIsDisplayed()
-        composeRule.onNodeWithText("Harga barang").assertIsDisplayed()
+        composeRule.onNodeWithText("Harga satuan").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithTag(CheckoutTags.PAY_BUTTON).assertIsEnabled()
     }
 

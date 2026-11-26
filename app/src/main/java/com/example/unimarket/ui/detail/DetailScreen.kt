@@ -20,9 +20,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.unimarket.data.model.ProductStatus
-import com.example.unimarket.ui.AppViewModelProvider
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.unimarket.ui.components.*
 import com.example.unimarket.ui.util.categoryColor
 import com.example.unimarket.ui.util.imageModel
@@ -62,7 +61,7 @@ fun DetailScreen(
     onChat: (buyerId: Long) -> Unit,
     onEdit: () -> Unit,
     onBuy: () -> Unit,
-    viewModel: DetailViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: DetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val product = uiState.product

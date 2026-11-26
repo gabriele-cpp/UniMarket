@@ -1,5 +1,8 @@
 package com.example.unimarket.ui.home
 
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.unimarket.data.model.Category
@@ -34,7 +37,8 @@ data class HomeUiState(
         get() = categories.firstOrNull { it.id == selectedCategoryId }?.name ?: ALL_CATEGORIES_LABEL
 }
 
-class HomeViewModel(
+@HiltViewModel
+class HomeViewModel @Inject constructor(
     private val productRepository: ProductRepository,
     categoryRepository: CategoryRepository,
     sessionRepository: SessionRepository? = null,
